@@ -43,11 +43,11 @@ jobs:
     name: ruff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         # No submodules: ruff.toml excludes vendor/, and linting needs no
         # dependencies at all.
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
@@ -67,13 +67,13 @@ jobs:
         # ships. The CLI has to work on both.
         python: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         # No submodule on purpose. This job exists to prove the skill's claim
         # that it is stdlib-only: if it passes without hermes-agent anywhere on
         # the path, then copying the skill directory really is the whole
         # installation.
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
 
@@ -101,7 +101,7 @@ jobs:
     name: offline suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           # The submodule is a shallow checkout of a large repository: ~253 MB
@@ -112,8 +112,10 @@ jobs:
         id: hermes
         run: echo "sha=$(git -C vendor/hermes-agent rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10
         with:
+          # enable-cache and cache-suffix are both still inputs as of v10 —
+          # checked against the tag's action.yml, not assumed.
           enable-cache: true
           # The dependency set only moves when the submodule or the install
           # script does.
