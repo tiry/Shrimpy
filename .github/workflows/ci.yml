@@ -150,6 +150,40 @@ jobs:
         # knows. `prompt --skills` exits 1 when the block is empty.
         run: ./shrimpy prompt --skills
 
+      - name: Render a pH trend, end to end
+        # The offline tests assert the plotted line follows the data by reading
+        # the pixels back. This produces the chart so a human can look at it —
+        # a green tick does not tell you whether a chart is legible.
+        run: ./scripts/demo-trend.sh "${RUNNER_TEMP}/demo"
+
+      - name: Show the trend in the job summary
+        # GitHub sanitises data: URIs out of summaries, so the PNG cannot be
+        # inlined here — it goes up as an artifact. The sparkline is text and
+        # travels fine, which makes the shape visible without a download.
+        run: |
+          {
+            echo "## pH trend — display tank"
+            echo
+            echo '```'
+            python3 skills/aquarium/aquarium-supervisor/scripts/aqua.py \
+              --data-dir "${RUNNER_TEMP}/demo/data" readings ph --tank display --limit 14
+            echo '```'
+            echo
+            echo "Chart and self-contained HTML report are in the **ph-trend** artifact."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the chart
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: ph-trend
+          path: |
+            ${{ runner.temp }}/demo/ph-trend.png
+            ${{ runner.temp }}/demo/report.html
+            ${{ runner.temp }}/demo/csv/
+          retention-days: 30
+          if-no-files-found: error
+
   live:
     name: behavioural evals (real model)
     # Scheduled, or requested explicitly. Never on pull_request — see the header.

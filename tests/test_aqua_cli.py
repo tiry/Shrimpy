@@ -456,6 +456,100 @@ def test_plot_produces_a_real_png(data_dir):
         assert len(image.convert("RGB").getcolors(maxcolors=100000)) > 10
 
 
+def _line_profile(png_path) -> list[tuple[int, float]]:
+    """Where the plotted line sits, column by column.
+
+    Returns (x, mean_y) for every column containing line-coloured pixels. The
+    line colour is the one _report.py draws with; PIL's draw.line is not
+    anti-aliased, so an exact match is reliable.
+    """
+    from PIL import Image
+
+    line_rgb = (31, 92, 160)
+    with Image.open(png_path) as image:
+        pixels = image.convert("RGB").load()
+        width, height = image.size
+        profile = []
+        for x in range(width):
+            ys = [y for y in range(height) if pixels[x, y] == line_rgb]
+            if ys:
+                profile.append((x, sum(ys) / len(ys)))
+    return profile
+
+
+def _log_series(data_dir, values, metric="ph", tank="display"):
+    """Log a series on consecutive days so the chart has a known shape."""
+    for index, value in enumerate(values):
+        day = f"2026-08-0{index + 1}" if index < 9 else f"2026-08-{index + 1}"
+        run(data_dir, "log", metric, str(value), "-t", tank,
+            "-i", "kactoily", "--at", f"{day}T09:00")
+
+
+def test_the_plotted_line_follows_the_data(data_dir):
+    """The chart must actually depict the readings.
+
+    "A PNG was produced" is not a test of a chart — a blank canvas passes it.
+    This reads the rendered pixels back and checks the line goes the way the
+    numbers do. Image y grows downward, so a rising series must trend to a
+    *smaller* y.
+    """
+    pytest.importorskip("PIL")
+    run(data_dir, "init")
+    _log_series(data_dir, [6.60, 6.70, 6.80, 6.90, 7.00, 7.10, 7.20])
+
+    png = data_dir / "rising.png"
+    result = run(data_dir, "plot", "ph", "-t", "display", "--out", str(png))
+    assert result.returncode == 0, result.stderr
+
+    profile = _line_profile(png)
+    assert len(profile) > 100, "the line barely covers the canvas"
+    first_y = profile[0][1]
+    last_y = profile[-1][1]
+    assert last_y < first_y - 40, (
+        f"a rising pH series should render as a rising line; y went {first_y:.0f} -> {last_y:.0f}"
+    )
+
+
+def test_a_falling_series_renders_falling(data_dir):
+    """The mirror of the above. Without it, a chart that ignores its input and
+    always draws the same slope would pass."""
+    pytest.importorskip("PIL")
+    run(data_dir, "init")
+    _log_series(data_dir, [7.20, 7.10, 7.00, 6.90, 6.80, 6.70, 6.60])
+
+    png = data_dir / "falling.png"
+    run(data_dir, "plot", "ph", "-t", "display", "--out", str(png))
+    profile = _line_profile(png)
+    assert profile[-1][1] > profile[0][1] + 40, "a falling series should render as a falling line"
+
+
+def test_the_target_band_is_drawn_where_the_target_is(data_dir):
+    """The shaded band is the reason the chart answers "is this OK", not just
+    "what is the number". If it were drawn in the wrong place it would say the
+    opposite of the truth, convincingly."""
+    pytest.importorskip("PIL")
+    from PIL import Image
+
+    run(data_dir, "init")
+    _log_series(data_dir, [6.60, 6.80, 7.00, 7.20, 7.40])
+
+    png = data_dir / "band.png"
+    run(data_dir, "plot", "ph", "-t", "display", "--out", str(png))
+
+    band_rgb = (232, 244, 234)
+    with Image.open(png) as image:
+        pixels = image.convert("RGB").load()
+        width, height = image.size
+        column = width // 2
+        band_rows = [y for y in range(height) if pixels[column, y] == band_rgb]
+
+    assert band_rows, "no target band was shaded"
+    # The display pH target is 6.8-7.4 against a plotted range of 6.6-7.4 plus
+    # padding, so the band must cover a large slice but not the whole canvas.
+    coverage = len(band_rows) / height
+    assert 0.25 < coverage < 0.95, f"target band covers {coverage:.0%} of the chart"
+
+
 def test_report_is_self_contained(data_dir):
     """One file you can open or send. An external reference would break both."""
     run(data_dir, "init")
