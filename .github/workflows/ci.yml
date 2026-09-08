@@ -112,10 +112,11 @@ jobs:
         id: hermes
         run: echo "sha=$(git -C vendor/hermes-agent rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - uses: astral-sh/setup-uv@v10
+      # Pinned to an exact release: astral-sh only publishes moving major tags up
+      # to v7, so `@v10` does not resolve even though v10.0.1 is the latest
+      # release. Third-party actions are worth pinning exactly regardless.
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
-          # enable-cache and cache-suffix are both still inputs as of v10 —
-          # checked against the tag's action.yml, not assumed.
           enable-cache: true
           # The dependency set only moves when the submodule or the install
           # script does.
