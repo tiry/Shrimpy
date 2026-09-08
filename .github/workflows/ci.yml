@@ -1,0 +1,134 @@
+# CI for the Shrimpy agent definition.
+#
+# Three jobs, cheapest first:
+#
+#   lint    ruff, no submodule, no venv
+#   skill   the skill's CLI on system Python 3.11-3.13, no submodule, no venv
+#   test    the full offline suite, which needs hermes-agent installed
+#
+# WHAT THIS DELIBERATELY DOES NOT RUN
+#
+# `./shrimpy eval` — the behavioural evals. They need OPENROUTER_API_KEY and cost
+# roughly $2 a cold run. Run them locally before changing SOUL.md or a skill;
+# results are cached on a hash of the agent definition, so a re-run is free until
+# the definition actually changes. See specs/05.
+#
+# There is no build artifact in this repo, so "does it install from clean" is the
+# equivalent check — that is `./shrimpy setup` in the `test` job.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+# A second push to the same ref makes the first run's answer irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Pinned. Unpinned, a ruff release that adds a rule fails CI on a commit that
+  # changed nothing.
+  RUFF_VERSION: "0.15.12"
+
+jobs:
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # No submodules: ruff.toml excludes vendor/, and linting needs no
+        # dependencies at all.
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install "ruff==${RUFF_VERSION}"
+
+      - name: Lint
+        run: ruff check . --output-format=github
+
+  skill:
+    name: skill CLI (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is hermes-agent's floor, 3.13 is what the deployment container
+        # ships. The CLI has to work on both.
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        # No submodule on purpose. This job exists to prove the skill's claim
+        # that it is stdlib-only: if it passes without hermes-agent anywhere on
+        # the path, then copying the skill directory really is the whole
+        # installation.
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install test dependencies only
+        # pytest and pyyaml are the harness's, not the skill's. The skill itself
+        # must import nothing outside the standard library, which
+        # test_cli_is_stdlib_only enforces against sys.stdlib_module_names.
+        run: pip install pytest pyyaml
+
+      - name: Run the CLI directly
+        run: |
+          python skills/aquarium/aquarium-supervisor/scripts/aqua.py \
+            --data-dir "${RUNNER_TEMP}/aquarium" status
+          python skills/aquarium/aquarium-supervisor/scripts/aqua.py \
+            --data-dir "${RUNNER_TEMP}/aquarium" doctor
+
+      - name: Tests that need no hermes-agent
+        run: |
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_aqua_cli.py \
+            tests/test_no_drift.py \
+            tests/test_profile_layout.py
+
+  test:
+    name: offline suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # The submodule is a shallow checkout of a large repository: ~253 MB
+          # at the pinned tag. Full history would be gigabytes for no benefit.
+          fetch-depth: 1
+
+      - name: Record the pinned hermes-agent revision
+        id: hermes
+        run: echo "sha=$(git -C vendor/hermes-agent rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          # The dependency set only moves when the submodule or the install
+          # script does.
+          cache-suffix: ${{ steps.hermes.outputs.sha }}-${{ hashFiles('scripts/setup.sh') }}
+
+      - name: Build — install uv, the venv and hermes-agent
+        run: ./shrimpy setup
+
+      - name: Offline checks
+        # No API key, no network, no cost. See the header for why the evals are
+        # not here.
+        run: ./shrimpy test
+
+      - name: The assembled system prompt still renders the skill
+        # A cheap canary for the failure that logs nothing: a skill dropped from
+        # the index leaves the agent answering fluently about tanks it no longer
+        # knows. `prompt --skills` exits 1 when the block is empty.
+        run: ./shrimpy prompt --skills

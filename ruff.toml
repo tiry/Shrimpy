@@ -1,0 +1,44 @@
+# Ruff configuration.
+#
+# Deliberately `ruff.toml` and not `pyproject.toml`: the repo root is a Hermes
+# *profile* (SOUL.md, DISPLAYNAME, avatar.png, skills/), not a Python package,
+# and a pyproject.toml here would invite someone to try installing it. Neither
+# file reaches the deployment — create-profile.sh copies only SOUL.md and
+# skills/*.
+#
+# vendor/ is the pinned hermes-agent submodule and is not ours to lint.
+
+line-length = 120
+target-version = "py311"   # upstream's floor; the deployment container runs 3.13
+
+extend-exclude = ["vendor", ".venv", ".work"]
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes — unused imports and names, the ones that bite
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+]
+
+ignore = [
+    # Wants a 120-character ternary in place of a readable four-line if/else in
+    # _calc.py::format_dose. The rule is right in general and wrong there.
+    "SIM108",
+]
+
+[lint.per-file-ignores]
+# The skill's CLI inserts its own directory on sys.path before importing its
+# siblings, because it is executed by absolute path from a skill directory
+# rather than imported as a package. The imports that follow are necessarily
+# late; the inline `# noqa: E402` comments say so at each site.
+"skills/aquarium/aquarium-supervisor/scripts/aqua.py" = ["E402"]
+
+# Tests reach into module internals on purpose — that is what they are testing.
+"tests/*" = ["SLF001"]
+
+[lint.isort]
+known-first-party = ["harness", "evals"]

@@ -1,12 +1,16 @@
+<img src="avatar.png" alt="Shrimpy" width="140" align="right">
+
 # Shrimpy
+
+[![CI](https://github.com/tiry/Shrimpy/actions/workflows/ci.yml/badge.svg)](https://github.com/tiry/Shrimpy/actions/workflows/ci.yml)
 
 The agent definition for **Shrimpy**, an aquarium keeper's assistant built on
 [Hermes Agent](https://github.com/NousResearch/hermes-agent) — plus a harness for
 running and testing it locally with nothing else attached.
 
 This repo is the source of truth for the persona and its skills. The
-[tairy-agent](../tairy-agent) deployment consumes them; it is not where they are
-edited.
+[tairy-agent](https://github.com/tiry/tairy-agent) deployment consumes them; it
+is not where they are edited.
 
 ```
 SOUL.md                     the persona

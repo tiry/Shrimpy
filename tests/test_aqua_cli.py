@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from conftest import REPO_ROOT
 
 SCRIPTS = REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor" / "scripts"
@@ -506,24 +505,34 @@ def test_json_output_is_valid_where_offered(data_dir):
 def test_cli_is_stdlib_only():
     """"Adding the skill is enough" only holds if nothing needs installing.
 
-    Pillow is the single exception and it is a core Hermes dependency, imported
-    lazily so a missing one degrades to SVG rather than failing.
+    Checked against ``sys.stdlib_module_names`` rather than a hand-written
+    allowlist, which was the bug the first version had: ruff modernised
+    ``typing.Iterator`` to ``collections.abc.Iterator`` and the test rejected
+    ``collections`` as third-party.
+
+    Pillow is the single permitted exception. It is a core Hermes dependency
+    (pyproject.toml:245) and is imported lazily, so a missing one degrades the
+    charts to stdlib SVG rather than failing.
     """
     import ast
 
-    allowed = {
-        "argparse", "json", "sys", "os", "csv", "io", "html", "base64", "shutil",
-        "tempfile", "pathlib", "datetime", "typing", "__future__", "ast", "re",
-        "_calc", "_store", "_report", "PIL",
-    }
+    local = {"_calc", "_store", "_report"}
+    allowed = set(sys.stdlib_module_names) | local | {"PIL"}
+
     for path in sorted(SCRIPTS.glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 names = [alias.name.split(".")[0] for alias in node.names]
             elif isinstance(node, ast.ImportFrom):
+                if node.level:  # relative import, necessarily local
+                    continue
                 names = [(node.module or "").split(".")[0]]
             else:
                 continue
             for name in names:
-                assert name in allowed, f"{path.name} imports {name!r}, which is not stdlib"
+                assert name in allowed, (
+                    f"{path.name} imports {name!r}, which is neither stdlib, a "
+                    f"sibling module, nor Pillow. The skill must install with no "
+                    f"dependencies of its own."
+                )

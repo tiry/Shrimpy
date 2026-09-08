@@ -15,7 +15,6 @@ from __future__ import annotations
 import re
 
 import pytest
-
 from conftest import REPO_ROOT, body
 
 # Matches `references/triage.md`, `` `references/chemistry.md` ``, etc.

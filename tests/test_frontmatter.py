@@ -20,7 +20,6 @@ What stays hand-rolled here is only what the linter does not cover:
 from __future__ import annotations
 
 import pytest
-
 from conftest import SKILL_PROMPT_DESC_LIMIT, frontmatter
 
 

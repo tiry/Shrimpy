@@ -22,7 +22,6 @@ import io
 from pathlib import Path
 
 import _calc as calc
-import _store as store
 
 PLOT_METRICS = ("ph", "temperature", "tds", "orp", "gh", "kh")
 

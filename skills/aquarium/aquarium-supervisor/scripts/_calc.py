@@ -12,18 +12,17 @@ If a number can be computed, it is computed here and nowhere else.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from _store import AquaError, reference
-
 
 # --------------------------------------------------------------------------- #
 # time
 # --------------------------------------------------------------------------- #
 
 def now_iso() -> str:
-    return datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%dT%H:%M")
+    return datetime.now(UTC).astimezone().strftime("%Y-%m-%dT%H:%M")
 
 
 def parse_when(value: str | None) -> str:
@@ -301,10 +300,16 @@ def delta_phrase(current: dict, prior: dict | None, metric_spec: dict | None) ->
     except (TypeError, ValueError, KeyError):
         return f"prior {format_value(prior, metric_spec)} ({prior.get('at')})"
     arrow = "+" if change > 0 else ""
+    # The delta is expressed relative to the *new* reading's timestamp, not to
+    # now: "Δ+0.05 over 2 days" describes the interval between the two readings.
+    elapsed = age_phrase(
+        prior.get("at", ""),
+        reference_time=to_datetime(current.get("at", "")) or None,
+    ).replace(" ago", "")
     return (
         f"prior {format_value(prior, metric_spec)} ({prior.get('at')}), "
-        f"Δ{arrow}{change:.{precision}f} over {age_phrase(prior.get('at', ''), reference_time=to_datetime(current.get('at', '')) or None)}"
-    ).replace(" ago", "")
+        f"Δ{arrow}{change:.{precision}f} over {elapsed}"
+    )
 
 
 def stale_summary(readings: list[dict]) -> str | None:

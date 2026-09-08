@@ -24,7 +24,6 @@ from __future__ import annotations
 import re
 
 import pytest
-
 from conftest import REPO_ROOT, body
 
 SKILL_DIR = REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor"

@@ -31,7 +31,6 @@ import _calc as calc  # noqa: E402
 import _store as store  # noqa: E402
 from _store import AquaError, Store  # noqa: E402
 
-
 # --------------------------------------------------------------------------- #
 # output helpers
 # --------------------------------------------------------------------------- #

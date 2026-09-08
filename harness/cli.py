@@ -6,10 +6,9 @@ import argparse
 import json
 import os
 import sys
-from pathlib import Path
 
-from . import REPO_ROOT, home as home_mod
-
+from . import REPO_ROOT
+from . import home as home_mod
 
 # --------------------------------------------------------------------------- #
 # prompt — offline

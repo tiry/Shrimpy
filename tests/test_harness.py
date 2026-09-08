@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import pytest
 import yaml
-
 from conftest import REPO_ROOT
 
 TEMPLATE = REPO_ROOT / "harness" / "config.template.yaml"
@@ -126,7 +125,9 @@ def test_eval_regexes_compile():
                 try:
                     re.compile(pattern)
                 except re.error as exc:
-                    raise AssertionError(f"{case['id']}.{key}: bad regex {pattern!r}: {exc}")
+                    raise AssertionError(
+                        f"{case['id']}.{key}: bad regex {pattern!r}: {exc}"
+                    ) from exc
 
 
 def test_eval_case_toolsets_are_real():
@@ -154,7 +155,7 @@ def test_eval_case_toolsets_are_real():
 # --------------------------------------------------------------------------- #
 
 def test_interceptor_blocks_shell_tools():
-    from harness.interception import LAN_BLOCK_MESSAGE, BLOCKED_TOOLS, Interceptor
+    from harness.interception import BLOCKED_TOOLS, LAN_BLOCK_MESSAGE, Interceptor
 
     interceptor = Interceptor()
     verdict = interceptor(tool_name="terminal", args={"command": "aquadirector dashboard"})

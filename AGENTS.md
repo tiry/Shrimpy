@@ -36,6 +36,12 @@ tooling the deployment ignores.
 ./shrimpy snapshots  # inspect or clear the eval cache
 ```
 
+CI (`.github/workflows/ci.yml`) runs `ruff`, the skill's CLI on Python 3.11-3.13
+without hermes-agent installed, and `./shrimpy test`. It does **not** run
+`./shrimpy eval` — that needs an API key and costs about $2 a cold run. Run the
+evals locally before changing `SOUL.md` or a skill; snapshots make a re-run free
+until the definition actually changes.
+
 ## Specs
 
 Planned and completed work lives in [`specs/`](specs/README.md), numbered in execution

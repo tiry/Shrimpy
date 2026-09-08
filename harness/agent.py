@@ -21,8 +21,8 @@ import io
 import json
 import re
 import shutil
-import tempfile
 import sys
+import tempfile
 import threading
 import time
 from contextlib import contextmanager
@@ -30,9 +30,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import REPO_ROOT
+from . import REPO_ROOT, interception, snapshot
 from . import home as home_mod
-from . import interception, snapshot
 
 # Deterministic aquarium data for evals. Not the live data, not the skill's
 # bundled migration payload - a third, fixed copy so a case's assertions do not

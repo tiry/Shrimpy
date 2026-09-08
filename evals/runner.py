@@ -24,7 +24,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -291,7 +291,7 @@ def main(args) -> int:
         out_write(f"{DIM}all cached — nothing was measured live. --live to re-record.{RESET}")
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%fZ")
     out = RESULTS_DIR / f"{stamp}.jsonl"
     with out.open("w", encoding="utf-8") as handle:
         for res in results:
