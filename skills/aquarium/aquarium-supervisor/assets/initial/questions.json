@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "_comment": "Open questions the agent should raise when relevant, and answered ones kept so they are not re-asked. The original numbered list in SKILL.md had lost items 2 and 3 to hand-deletion without renumbering, and its top item was already answered 380 lines earlier in the same file.",
+  "questions": [
+    {
+      "id": 1,
+      "text": "GH and KH on the Hanna checkers, in BOTH tanks, same session.",
+      "status": "answered",
+      "asked": "2026-09-05",
+      "answered_at": "2026-09-05",
+      "answer": "Measured. Display 161/46 ppm, staging 62/22 ppm. The tanks are NOT matched and staging is the soft one."
+    },
+    {
+      "id": 2,
+      "text": "Tap water GH, KH and TDS - untested, so change-water preparation cannot be specified.",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 3,
+      "text": "Substrate depth in the display tank, to firm up the ~25 gal estimate.",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 4,
+      "text": "Guppy sex ratio - if mixed, expect fry and a compounding bioload.",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 5,
+      "text": "Is the suckermouth an Otocinclus or a juvenile pleco? A common pleco would outgrow the tank.",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 6,
+      "text": "Is the Eheim autofeeder in use, and on what schedule?",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 7,
+      "text": "How long have the staging animals been in quarantine, and what is the plan for moving them out?",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 8,
+      "text": "Plant species in the staging tank and how established they are - it determines how much grazing surface the nerites and shrimp actually have.",
+      "status": "open",
+      "asked": "2026-09-05",
+      "answered_at": null,
+      "answer": null
+    }
+  ]
+}

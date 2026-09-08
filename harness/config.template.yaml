@@ -1,0 +1,62 @@
+# Harness-only Hermes config. NOT the agent definition, and NOT what the
+# tairy-agent deployment uses — that generates its own config.yaml on the volume
+# (profiles/README.md). This file exists to make local runs cheap, quiet, offline
+# and reproducible.
+#
+# Rendered by harness/home.py: ${VAR} placeholders are substituted.
+
+model:
+  provider: ${PROVIDER}
+  default: ${MODEL}
+
+# The skill index is only rendered into the system prompt when a skills tool is
+# present in the toolset (agent/system_prompt.py:619). Without this, Shrimpy's
+# aquarium skill would be invisible and every eval would silently fail.
+#
+# `terminal` is here because the deployment grants one and SKILL.md's whole §7
+# rule is "you have a shell, don't use it for aquadirector" — untestable against
+# an agent with no shell. Under `ask` and `eval` nothing runs: shell-capable
+# tools are blocked at the pre_tool_call gate by harness/interception.py.
+#
+# NOTE `chat` is the exception — it execs the real `hermes` binary, which does
+# not load the harness, so a terminal there is a REAL terminal.
+#
+# Must stay identical to harness/agent.py RUN_TOOLSETS.
+platform_toolsets:
+  cli: [skills, file, terminal]
+
+# --- keep the harness offline and free of side effects ----------------------
+
+# Hindsight is off by default (provider: ""), but pin it: a stray env var or a
+# future default change should not silently start writing episodic memory.
+memory:
+  memory_enabled: false
+  user_profile_enabled: false
+  provider: ""
+  nudge_interval: 0
+
+# Both of these fire extra LLM calls per turn that have nothing to do with the
+# answer under test, and would pollute cost accounting.
+auxiliary:
+  title_generation:
+    enabled: false
+  background_review:
+    enabled: false
+
+curator:
+  enabled: false
+
+telemetry:
+  shared_metrics:
+    enabled: false
+
+# Absolute kill switch on pip-installing dependencies mid-run.
+security:
+  allow_lazy_installs: false
+
+mcp_servers: {}
+plugins:
+  enabled: []
+
+display:
+  quiet: true

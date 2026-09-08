@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "_comment": "Classes: routine (in regular use), reserve (situational, conditions attached), emergency-only, paused, never (present in the cabinet but not to be used in these tanks), do-not-buy. Dose formulas are reference data and live in assets/reference.json - only what is on the shelf is here.",
+  "items": [
+    {
+      "id": "prime",
+      "product": "Seachem Prime",
+      "size": "500 mL",
+      "on_hand": 1,
+      "class": "routine",
+      "opened": null,
+      "reference_product": "prime",
+      "notes": "At these volumes a 500 mL bottle is effectively a lifetime supply. Measure the staging tank in drops - pouring from the bottle into four gallons overdoses badly."
+    },
+    {
+      "id": "stability",
+      "product": "Seachem Stability",
+      "size": "500 mL",
+      "on_hand": 1,
+      "class": "routine",
+      "opened": null,
+      "reference_product": "stability",
+      "notes": "The staging tank's young filter is the one that may genuinely benefit."
+    },
+    {
+      "id": "crushed-coral",
+      "product": "CaribSea Florida Crushed Coral",
+      "size": "aragonite 2.0-5.5 mm",
+      "on_hand": 1,
+      "class": "routine",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Passive buffer, in both filters. Aragonite dissolution is self-limiting - the rate falls as pH rises and effectively stalls around 7.2-7.5, so it is a buffer that stops working once it is no longer needed. Overshoot is not a realistic failure mode; undersupply is."
+    },
+    {
+      "id": "advatec",
+      "product": "Advatec freshwater liquid test kit",
+      "size": "5 tests",
+      "on_hand": 1,
+      "class": "routine",
+      "opened": "2026-09-05",
+      "reference_product": null,
+      "notes": "The primary test method and the reference for nitrogen. Closed the ammonia gap on 5 Sep 2026."
+    },
+    {
+      "id": "hanna-hi735",
+      "product": "Hanna HI735 (GH)",
+      "size": "0-350 ppm CaCO3",
+      "on_hand": 1,
+      "class": "routine",
+      "opened": null,
+      "reference_product": null,
+      "notes": "The real GH number."
+    },
+    {
+      "id": "hanna-hi775",
+      "product": "Hanna HI775 (KH)",
+      "size": "0-500 ppm CaCO3",
+      "on_hand": 1,
+      "class": "routine",
+      "opened": null,
+      "reference_product": null,
+      "notes": "The real KH number."
+    },
+    {
+      "id": "distilled-water",
+      "product": "Distilled water",
+      "size": "jugs",
+      "on_hand": null,
+      "class": "routine",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Top-off only. 0 TDS, no conditioner needed. Reading pH 5.5-5.8 in the jug is normal atmospheric CO2 and will not move tank pH - the KH absorbs it on contact."
+    },
+    {
+      "id": "bacnunn-strips",
+      "product": "BACNUNN 9-in-1 test strips",
+      "size": "200 strips",
+      "on_hand": 1,
+      "class": "screen",
+      "opened": "2026-09-05",
+      "reference_product": null,
+      "notes": "Demoted to a rough screen since the Advatec kit arrived. Still the only thing here that measures free chlorine, copper and iron. No ammonia pad exists. Do not use for pH, hardness, alkalinity, nitrate or nitrite."
+    },
+    {
+      "id": "fluval-carbon",
+      "product": "Fluval Carbon (premium bituminous)",
+      "size": "3 x 100 g",
+      "on_hand": 3,
+      "class": "reserve",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Tannins, odours, suspected aerosol or lotion contamination. One 100 g bag suits the display tank. Exhausts in 3-4 weeks. Remove before dosing any medication - it strips the medication out."
+    },
+    {
+      "id": "hydrogen-peroxide",
+      "product": "Hydrogen peroxide 3% USP (10 volume)",
+      "size": "946 mL",
+      "on_hand": 1,
+      "class": "reserve",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Spot-treat algae only, by syringe, filter briefly off, applied directly to the target. Never freehand into the tank with shrimp present. It kills biofilm, which in the staging tank is a direct cost to animals already short of food."
+    },
+    {
+      "id": "melafix",
+      "product": "API Melafix",
+      "size": "473 mL",
+      "on_hand": 1,
+      "class": "reserve",
+      "opened": null,
+      "reference_product": "melafix",
+      "notes": "Invert-safe at label dose, but efficacy is weakly supported and the oil film cuts gas exchange - which matters more here than usual, because surface agitation does both the oxygenation and the evaporative cooling."
+    },
+    {
+      "id": "thrives",
+      "product": "NilocG ThriveS",
+      "size": null,
+      "on_hand": 1,
+      "class": "paused",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Shrimp-safe, ultra-low copper, NPK about 0.43-0.14-5.5. Potassium salts raise TDS and EC without contributing GH. Resume at half strength (2-3 pumps weekly) only on visible plant deficiency, and check the strips' iron pad first. Never use it to try to raise GH."
+    },
+    {
+      "id": "fluval-ammonia-remover",
+      "product": "Fluval Ammonia Remover (clinoptilolite zeolite)",
+      "size": "3 x 180 g",
+      "on_hand": 3,
+      "class": "emergency-only",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Emergency ion exchange only. Not for routine use or cycling - it starves the nitrifying colony of its substrate and stalls maturation. Zero affinity for nitrite. NEVER WITH SALT. If deployed, remove and discard the bag once the cause is fixed."
+    },
+    {
+      "id": "aquarium-salt",
+      "product": "API Aquarium Salt",
+      "size": "482 g (17 oz)",
+      "on_hand": 1,
+      "class": "never",
+      "opened": null,
+      "reference_product": null,
+      "notes": "The one live hazard in the cabinet. Zeolite binds ammonium by exchanging it for sodium; sodium chloride reverses that exchange and releases the resin's entire accumulated ammonium load into the water at once. Separately, shrimp and snails tolerate salt badly and suckermouth catfish are sensitive to it. There is no scenario in these two tanks where it is the right tool."
+    },
+    {
+      "id": "ich-x",
+      "product": "ICH-X (marine formulation)",
+      "size": null,
+      "on_hand": 1,
+      "class": "never",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Formaldehyde under 5%, methanol under 2%, malachite green chloride under 0.1%. Malachite green is toxic to invertebrates and formalin depletes dissolved oxygen quickly. Explicitly contraindicated with sulfinate/sulfoxylate conditioners, which includes Prime. If ich appears, treat affected fish in a separate bare hospital tank with no invertebrates."
+    },
+    {
+      "id": "stress-coat",
+      "product": "API Stress Coat+",
+      "size": "473 mL",
+      "on_hand": 1,
+      "class": "never",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Redundant with Prime for dechlorination, and the aloe vera can coat and foul fine shrimp gill filaments."
+    },
+    {
+      "id": "remineralizers",
+      "product": "Remineralizers (SaltyShrimp Mineral GH+, Seachem Equilibrium)",
+      "size": null,
+      "on_hand": 0,
+      "class": "do-not-buy",
+      "opened": null,
+      "reference_product": null,
+      "notes": "Not owned, and not needed while display GH sits inside the Neocaridina range. Revisit only if the HI735 reads below 70 ppm (4 dGH). This prohibits dosing the display tank; preparing matched water-change water is a separate question, and swapping display water into staging is a third."
+    }
+  ],
+  "gaps": [
+    "No invert-safe ich treatment, should it ever be needed.",
+    "Tap water untested, so change-water preparation cannot be specified yet."
+  ]
+}

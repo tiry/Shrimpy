@@ -1,0 +1,32 @@
+{"at": "2026-09-05", "tank": "display", "metric": "gh", "value": 161.0, "unit": "ppm", "instrument": "hi735", "note": "9.0 dGH"}
+{"at": "2026-09-05", "tank": "display", "metric": "kh", "value": 46.0, "unit": "ppm", "instrument": "hi775", "note": "2.6 dKH"}
+{"at": "2026-09-05", "tank": "staging", "metric": "gh", "value": 62.0, "unit": "ppm", "instrument": "hi735", "note": "3.5 dGH - below the 4 dGH molt floor"}
+{"at": "2026-09-05", "tank": "staging", "metric": "kh", "value": 22.0, "unit": "ppm", "instrument": "hi775", "note": "1.2 dKH"}
+{"at": "2026-09-05T15:00", "tank": "display", "metric": "free_chlorine", "value": 0.0, "unit": "ppm", "instrument": "bacnunn", "note": null}
+{"at": "2026-09-05T15:00", "tank": "display", "metric": "copper", "value": 0.0, "unit": "ppm", "instrument": "bacnunn", "note": null}
+{"at": "2026-09-05T15:00", "tank": "display", "metric": "iron", "value": 0.0, "unit": "ppm", "instrument": "bacnunn", "note": "no ThriveS residue"}
+{"at": "2026-09-05T15:00", "tank": "display", "metric": "ph", "value": 6.2, "value_max": 6.2, "unit": "", "instrument": "bacnunn", "note": "Bottom of scale. Demonstrably low against the calibrated probe's 6.86 the same afternoon - kept as evidence the pad is unusable, not as a pH reading."}
+{"at": "2026-09-05T15:00", "tank": "staging", "metric": "free_chlorine", "value": 0.0, "unit": "ppm", "instrument": "bacnunn", "note": null}
+{"at": "2026-09-05T15:00", "tank": "staging", "metric": "copper", "value": 0.0, "unit": "ppm", "instrument": "bacnunn", "note": null}
+{"at": "2026-09-05T15:00", "tank": "staging", "metric": "iron", "value": 0.0, "unit": "ppm", "instrument": "bacnunn", "note": null}
+{"at": "2026-09-05T15:00", "tank": "staging", "metric": "ph", "value": 6.2, "value_max": 6.2, "unit": "", "instrument": "bacnunn", "note": "Same unusable pad."}
+{"at": "2026-09-05T16:06", "tank": "display", "metric": "ph", "value": 6.86, "unit": "", "instrument": "kactoily", "note": "Probe calibrated the same day and read correct already."}
+{"at": "2026-09-05T16:06", "tank": "display", "metric": "temperature", "value": 24.7, "unit": "C", "instrument": "kactoily", "note": null}
+{"at": "2026-09-05T16:06", "tank": "display", "metric": "tds", "value": 255.0, "unit": "ppm", "instrument": "kactoily", "note": null}
+{"at": "2026-09-05T16:06", "tank": "display", "metric": "ec", "value": 510.0, "unit": "uS/cm", "instrument": "kactoily", "note": null}
+{"at": "2026-09-05T16:06", "tank": "display", "metric": "orp", "value": 440.0, "unit": "mV", "instrument": "kactoily", "note": "Low organic load. Not an ammonia test."}
+{"at": "2026-09-05T16:43", "tank": "display", "metric": "ph", "value": 6.86, "unit": "", "instrument": "smartlife", "note": null}
+{"at": "2026-09-05T16:43", "tank": "display", "metric": "temperature", "value": 24.5, "unit": "C", "instrument": "smartlife", "note": "0.2 C from the CLI reading 37 minutes earlier. Not drift."}
+{"at": "2026-09-05T16:43", "tank": "display", "metric": "tds", "value": 255.0, "unit": "ppm", "instrument": "smartlife", "note": null}
+{"at": "2026-09-05T16:43", "tank": "display", "metric": "ec", "value": 510.0, "unit": "uS/cm", "instrument": "smartlife", "note": null}
+{"at": "2026-09-05T16:43", "tank": "display", "metric": "orp", "value": 440.0, "unit": "mV", "instrument": "smartlife", "note": null}
+{"at": "2026-09-05T18:33", "tank": "display", "metric": "ammonia", "value": 0.0, "unit": "ppm", "instrument": "advatec", "note": "First ammonia measurement ever taken in this system. Closes the gap."}
+{"at": "2026-09-05T18:33", "tank": "display", "metric": "nitrite", "value": 0.0, "unit": "ppm", "instrument": "advatec", "note": null}
+{"at": "2026-09-05T18:33", "tank": "display", "metric": "nitrate", "value": 0.0, "unit": "ppm", "instrument": "advatec", "note": "Planted tank, uptake absorbing what the filter produces."}
+{"at": "2026-09-05T18:33", "tank": "display", "metric": "phosphate", "value": 0.25, "value_min": 0.0, "value_max": 0.25, "unit": "ppm", "instrument": "advatec", "note": "Colour between 0 and 0.25; upper bound recorded. No case for ThriveS."}
+{"at": "2026-09-05T18:33", "tank": "display", "metric": "ph", "value": 7.4, "value_min": 7.2, "value_max": 7.6, "unit": "", "instrument": "advatec", "note": "Liquid kit, evening. Reads high against the probe's 6.86 at 16:06 - planted tanks climb through the photoperiod as plants strip CO2. Compare pH only at consistent times of day."}
+{"at": "2026-09-05T18:33", "tank": "staging", "metric": "ammonia", "value": 0.0, "unit": "ppm", "instrument": "advatec", "note": "Rules out an uncycled filter accumulating ammonia. The tank is processing its bioload."}
+{"at": "2026-09-05T18:33", "tank": "staging", "metric": "nitrite", "value": 0.0, "unit": "ppm", "instrument": "advatec", "note": null}
+{"at": "2026-09-05T18:33", "tank": "staging", "metric": "nitrate", "value": 0.0, "unit": "ppm", "instrument": "advatec", "note": "Unsurprising in a planted tank."}
+{"at": "2026-09-05T18:33", "tank": "staging", "metric": "phosphate", "value": 0.25, "unit": "ppm", "instrument": "advatec", "note": null}
+{"at": "2026-09-05T18:33", "tank": "staging", "metric": "ph", "value": 6.9, "value_min": 6.8, "value_max": 7.0, "unit": "", "instrument": "advatec", "note": "Reads lower than the display, consistent with coral two days old against the display's week."}

@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "_comment": "Generic reference data. Ships with the skill, replaced on every provision, reviewed in git. Nothing here is specific to a particular tank, animal or bottle - that is instance data and lives on the volume. See specs/06.",
+
+  "conversions": {
+    "cubic_inches_per_gallon": 231.0,
+    "litres_per_gallon": 3.78541,
+    "hardness_ppm_per_degree": 17.86,
+    "hardness_note": "German degrees to ppm as CaCO3. d = ppm / 17.86.",
+    "tds_from_ec_factor": 0.5,
+    "tds_from_ec_note": "A meter setting, NaCl-referenced. Not a chemical relationship - do not present it as physics.",
+    "drops_per_ml": 20,
+    "drops_note": "On a standard Seachem cap. One cap thread is about 1 mL.",
+    "tbsp_per_ml": 14.7868,
+    "hi700_total_ammonia_factor": 1.214,
+    "hi700_note": "A Hanna HI700 reads ammonia-nitrogen. Total ammonia = reading x 1.214 (17.03/14.01). Not owned."
+  },
+
+  "metrics": {
+    "ph":            {"label": "pH",          "unit": "",      "precision": 2, "kind": "continuous"},
+    "temperature":   {"label": "Temperature", "unit": "C",     "precision": 1, "kind": "continuous"},
+    "tds":           {"label": "TDS",         "unit": "ppm",   "precision": 0, "kind": "continuous"},
+    "ec":            {"label": "EC",          "unit": "uS/cm", "precision": 0, "kind": "continuous"},
+    "orp":           {"label": "ORP",         "unit": "mV",    "precision": 0, "kind": "continuous"},
+    "gh":            {"label": "GH",          "unit": "ppm",   "precision": 0, "kind": "hardness"},
+    "kh":            {"label": "KH",          "unit": "ppm",   "precision": 0, "kind": "hardness"},
+    "ammonia":       {"label": "Ammonia",     "unit": "ppm",   "precision": 2, "kind": "nitrogen"},
+    "nitrite":       {"label": "Nitrite",     "unit": "ppm",   "precision": 2, "kind": "nitrogen"},
+    "nitrate":       {"label": "Nitrate",     "unit": "ppm",   "precision": 1, "kind": "nitrogen"},
+    "phosphate":     {"label": "Phosphate",   "unit": "ppm",   "precision": 2, "kind": "nutrient"},
+    "free_chlorine": {"label": "Free Cl2",    "unit": "ppm",   "precision": 2, "kind": "contaminant"},
+    "copper":        {"label": "Copper",      "unit": "ppm",   "precision": 2, "kind": "contaminant"},
+    "iron":          {"label": "Iron",        "unit": "ppm",   "precision": 2, "kind": "contaminant"}
+  },
+
+  "instruments": {
+    "kactoily": {
+      "name": "Kactoily 7-in-1 probe",
+      "trusted_for": ["ph", "temperature", "tds", "ec", "orp"],
+      "not_trusted_for": [],
+      "note": "Continuous probe. Reef-oriented: its salinity and SG readings carry no information in freshwater. Ignore them."
+    },
+    "smartlife": {
+      "name": "SmartLife app (Tuya)",
+      "trusted_for": ["ph", "temperature", "tds", "ec", "orp"],
+      "not_trusted_for": [],
+      "note": "The same sensor, read through the phone app. Has a History view the CLI does not. No battery tile - an unreported datapoint, not a dying sensor."
+    },
+    "hi735": {
+      "name": "Hanna HI735 (GH)",
+      "trusted_for": ["gh"],
+      "not_trusted_for": [],
+      "note": "0-350 ppm as CaCO3. Never substitute the marine checkers HI755/HI772/HI781/HI782 - their dye chemistries need seawater ionic strength."
+    },
+    "hi775": {
+      "name": "Hanna HI775 (KH)",
+      "trusted_for": ["kh"],
+      "not_trusted_for": [],
+      "note": "0-500 ppm as CaCO3. Same marine-checker warning as the HI735."
+    },
+    "advatec": {
+      "name": "Advatec freshwater liquid kit",
+      "trusted_for": ["ammonia", "nitrite", "nitrate", "phosphate"],
+      "not_trusted_for": ["ph"],
+      "note": "The reference for nitrogen. Judge colour in neutral daylight against white - warm low sun shifts every tube orange. For pH prefer the calibrated probe. The ammonia scale runs yellow (0) to green (high), opposite to nitrite and nitrate."
+    },
+    "bacnunn": {
+      "name": "BACNUNN 9-in-1 strips",
+      "trusted_for": ["free_chlorine", "copper", "iron"],
+      "not_trusted_for": ["ph", "gh", "kh", "nitrate", "nitrite"],
+      "note": "A screen, not a measurement. No ammonia pad exists. The pH pad read 6.2 or below against a calibrated probe's 6.86 - demonstrably low. Still the only thing here that measures chlorine, copper and iron. Hold flat 30-60 s and read in the window."
+    },
+    "observed": {
+      "name": "Observed / reported",
+      "trusted_for": [],
+      "not_trusted_for": [],
+      "note": "A value someone stated without naming an instrument. Treat as provisional."
+    }
+  },
+
+  "products": {
+    "prime": {
+      "name": "Seachem Prime",
+      "label_dose_ml": 5.0,
+      "label_per_gallons": 50.0,
+      "scenarios": {
+        "standard": {"multiplier": 1.0, "note": "routine full-volume dose"},
+        "emergency": {"multiplier": 5.0, "note": "ammonia or nitrite emergency; both products are forgiving"},
+        "change-water": {"multiplier": 1.0, "per_gallon_of_new_water": true, "note": "dose the new water, not the tank"}
+      },
+      "does_not": ["move pH", "move GH"],
+      "note": "Removes chlorine and chloramine, binds heavy metals, temporarily complexes ammonia and nitrite for about 24-48 h. Re-dose within that window if the cause persists."
+    },
+    "stability": {
+      "name": "Seachem Stability",
+      "label_dose_ml": 5.0,
+      "label_per_gallons": 10.0,
+      "scenarios": {
+        "day1": {"multiplier": 1.0, "note": "first day"},
+        "days2-7": {"multiplier": 0.5, "note": "label is 5 mL per 20 gal after day 1"}
+      },
+      "note": "Nitrifying and facultative bacteria. Use after adding livestock, replacing or heavily rinsing media, cycling, or antibacterial exposure. Skip it when ammonia and nitrite read 0 and nitrate is present - the colony is self-sustaining."
+    },
+    "melafix": {
+      "name": "API Melafix",
+      "label_dose_ml": 5.0,
+      "label_per_gallons": 10.0,
+      "scenarios": {
+        "standard": {"multiplier": 1.0},
+        "with-shrimp": {"multiplier": 0.5, "note": "many keepers halve it with shrimp present"}
+      },
+      "note": "1% melaleuca oil. Invert-safe at label dose, but efficacy is weakly supported and the surface film cuts gas exchange - which matters more here than usual, because surface agitation does both the oxygenation and the evaporative cooling."
+    }
+  },
+
+  "species": {
+    "neocaridina": {
+      "name": "Neocaridina davidi",
+      "common": "Neocaridina shrimp",
+      "temperature_c": [18, 29],
+      "temperature_optimal_c": [20, 24],
+      "ph": [6.5, 7.8],
+      "gh_degrees": [6, 12],
+      "kh_degrees": [2, 5],
+      "tds_ppm": [150, 250],
+      "tds_tolerated_ppm": [150, 400],
+      "molt_interval_days": [21, 28],
+      "gh_molt_floor_degrees": 4.0,
+      "notes": [
+        "Below about 4 dGH there is not enough dissolved calcium to calcify a new cuticle. Presents as the white ring of death - a split behind the carapace, with no prior warning.",
+        "Copper is toxic in the low tens of ppb. They use hemocyanin, so copper is structural, not incidental.",
+        "A rapid GH rise is its own osmotic event. Walk changes up over days, do not fix them in one session."
+      ]
+    },
+    "guppy": {
+      "name": "Poecilia reticulata",
+      "common": "Fancy guppy",
+      "temperature_c": [22, 28],
+      "temperature_optimal_c": [24, 27],
+      "ph": [7.0, 8.0],
+      "gh_degrees": [8, 20],
+      "notes": [
+        "Prefers harder water than Neocaridina. In a shared tank the shrimp set the ceiling.",
+        "Shock presents over 12-36 h, not immediately.",
+        "Mixed sexes give fry within weeks and a compounding bioload."
+      ]
+    },
+    "otocinclus": {
+      "name": "Otocinclus sp.",
+      "common": "Otocinclus",
+      "temperature_c": [20, 28],
+      "temperature_optimal_c": [22, 26],
+      "ph": [6.0, 7.5],
+      "shoal_minimum": 5,
+      "notes": [
+        "Shoaling. A lone one hides, grazes less, and gives no group behaviour to compare against - the belly check is then the only health signal.",
+        "Easily confused with a juvenile pleco. A common pleco reaches 30 cm and would outgrow a 25-gallon tank entirely."
+      ]
+    },
+    "mystery_snail": {
+      "name": "Pomacea diffusa",
+      "common": "Albino mystery snail",
+      "temperature_c": [20, 28],
+      "ph": [7.0, 8.0],
+      "kh_degrees": [3, 10],
+      "adult_volume_gallons_each": [2.5, 5.0],
+      "lifespan_years": [1, 2],
+      "notes": [
+        "Large, heavy feeders and heavy waste producers.",
+        "Needs at least an inch of headspace above the waterline to breathe, and an escape-proof lid. They climb.",
+        "Takes sinking vegetable pellets, blanched zucchini or spinach.",
+        "Shell erosion below about 7.0 pH with thin KH is faster than they can lay carbonate down. Existing damage never heals."
+      ]
+    },
+    "nerite": {
+      "name": "Vittina waigiensis",
+      "common": "Red Racer nerite",
+      "temperature_c": [22, 28],
+      "ph": [7.0, 8.5],
+      "kh_degrees": [3, 12],
+      "notes": [
+        "Will not breed in freshwater - larvae need brackish water.",
+        "Refuses prepared food; grazes biofilm. A young setup carries thin biofilm, so judge by animal condition rather than assuming they are fed.",
+        "Place right-side up on rock, wood or glass after a transfer. They climb and escape."
+      ]
+    }
+  },
+
+  "heuristics": {
+    "spectator_ions": {
+      "formula": "TDS_measured - (GH_ppm + KH_ppm)",
+      "normal_range": [30, 60],
+      "act_threshold": 80,
+      "note": "A trend line, not a concentration. GH and KH are ppm CaCO3 equivalents, not dissolved mass; the calcium in GH is largely the same ion paired with the bicarbonate in KH, so subtracting both double-counts; and conductivity-derived TDS under-reads Ca2+/HCO3-. What it is good for: if GH and KH hold steady and this climbs, something that is not hardness is accumulating. Answer that with a water change, never with an additive.",
+      "requires": ["tds", "gh", "kh"]
+    },
+    "dilution": {
+      "formula": "TDS_final = TDS_initial * (1 - V_replaced / V_total)",
+      "note": "The same fraction applies to GH and KH, which is why change water should be matched rather than pure. A 15% pure-distilled change drops hardness 15% in one step."
+    }
+  },
+
+  "target_defaults": {
+    "_comment": "Seeds for a new tank. Per-tank targets are instance data and live in tanks.json, because they are a keeper's decision, not a species fact.",
+    "ph": {"min": 6.8, "max": 7.4},
+    "temperature": {"min": 22.0, "max": 25.0},
+    "tds": {"min": 150, "max": 280},
+    "orp": {"min": 300, "max": null},
+    "gh": {"min": 105, "max": 215},
+    "kh": {"min": 35, "max": 70},
+    "ammonia": {"min": 0, "max": 0.25},
+    "nitrite": {"min": 0, "max": 0.25},
+    "nitrate": {"min": 0, "max": 20}
+  }
+}

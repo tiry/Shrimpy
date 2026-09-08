@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Shrimpy — one entrypoint for the whole harness.
+#
+#   ./shrimpy setup              install uv, .venv and hermes-agent
+#   ./shrimpy test               offline checks (no API key, no cost)
+#   ./shrimpy prompt [--skills]  print the assembled system prompt
+#   ./shrimpy ask "..."          one question, one answer
+#   ./shrimpy chat               interactive REPL as Shrimpy
+#   ./shrimpy eval               behavioural evals against evals/cases/
+#   ./shrimpy snapshots          inspect or clear the eval result cache
+#
+# Re-execs itself into .venv so nothing depends on an activated shell.
+set -euo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO"
+
+CMD="${1:-help}"
+[ $# -gt 0 ] && shift || true
+
+if [ "$CMD" = "setup" ]; then
+    exec bash scripts/setup.sh "$@"
+fi
+
+if [ ! -x .venv/bin/python ]; then
+    echo "no .venv — run: ./shrimpy setup" >&2
+    exit 1
+fi
+PY="$REPO/.venv/bin/python"
+
+case "$CMD" in
+    test)
+        # Offline only. -p no:cacheprovider keeps .pytest_cache out of the tree.
+        exec "$PY" -m pytest tests -q -p no:cacheprovider "$@"
+        ;;
+    prompt|ask|chat|eval|snapshots)
+        exec "$PY" -m harness.cli "$CMD" "$@"
+        ;;
+    help|-h|--help)
+        sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+        ;;
+    *)
+        echo "unknown command: $CMD" >&2
+        sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' >&2
+        exit 2
+        ;;
+esac

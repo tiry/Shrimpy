@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "animals": [
+    {
+      "id": "display-neocaridina",
+      "tank": "display",
+      "species": "neocaridina",
+      "name": "Neocaridina shrimp",
+      "count": 9,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "18 shrimp across both tanks - a small population. Investigate any death."
+    },
+    {
+      "id": "display-guppy",
+      "tank": "display",
+      "species": "guppy",
+      "name": "Fancy guppy",
+      "count": 9,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Sex ratio unknown. If mixed, fry within weeks and a compounding bioload in a tank with no nitrate export."
+    },
+    {
+      "id": "display-sucker",
+      "tank": "display",
+      "species": "otocinclus",
+      "name": "Suckermouth catfish",
+      "count": 1,
+      "added": null,
+      "confidence": "unconfirmed",
+      "notes": "Otocinclus or juvenile pleco - not established which. Alone, and Otocinclus are shoaling animals needing 5-6+. A common pleco reaches 30 cm and would outgrow this tank entirely. The belly check is the only health signal available."
+    },
+    {
+      "id": "staging-mystery-snail",
+      "tank": "staging",
+      "species": "mystery_snail",
+      "name": "Albino mystery snail",
+      "count": 3,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Adults are commonly given 2.5-5 gal each. Three of them in a shared four gallons is the core of the overstocking problem."
+    },
+    {
+      "id": "staging-nerite",
+      "tank": "staging",
+      "species": "nerite",
+      "name": "Red Racer nerite",
+      "count": 3,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Grazes biofilm only. The tank is planted, so there is real grazing surface, but a young setup carries thin biofilm for six grazers plus nine shrimp."
+    },
+    {
+      "id": "staging-neocaridina",
+      "tank": "staging",
+      "species": "neocaridina",
+      "name": "Neocaridina shrimp",
+      "count": 9,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Nine animals on a 3-4 week molt clock in the tank with the lowest GH."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Local runtime state — never part of the agent definition.
+.venv/
+.work/
+.env
+evals/results/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Byte-cache from running the skill's CLI in place
+skills/**/__pycache__/

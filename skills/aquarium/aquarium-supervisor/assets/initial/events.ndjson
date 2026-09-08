@@ -1,0 +1,4 @@
+{"at": "2026-08-29", "tank": "display", "type": "media-added", "detail": "2-3 tbsp CaribSea crushed coral in a mesh bag, downstream of the mechanical pads", "note": "Aragonite takes weeks to equilibrate, so pH, KH and GH are still rising toward their settling point."}
+{"at": "2026-09-03T20:00", "tank": "staging", "type": "media-added", "detail": "Crushed coral added to the filter - less than the 2-3 tbsp originally documented", "note": "Undersupplied for the volume. Target is 1-2 tbsp."}
+{"at": "2026-09-05", "tank": "display", "type": "calibration", "detail": "pH probe calibrated against buffer sachets", "note": "It was already reading correctly. Treat the probe as the trusted continuous instrument."}
+{"at": "2026-09-05", "tank": null, "type": "equipment-acquired", "detail": "Advatec freshwater liquid test kit", "note": "Becomes the primary test method and the reference for nitrogen. Demotes the BACNUNN strips to a screen."}
