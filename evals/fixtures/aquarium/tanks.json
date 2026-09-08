@@ -4,8 +4,20 @@
   "tanks": {
     "display": {
       "name": "Display tank",
-      "aliases": ["display", "big", "main", "25", "25g", "25 gal", "large"],
-      "dimensions_in": {"length": 32.0, "width": 15.0, "height": 14.0},
+      "aliases": [
+        "display",
+        "big",
+        "main",
+        "25",
+        "25g",
+        "25 gal",
+        "large"
+      ],
+      "dimensions_in": {
+        "length": 32.0,
+        "width": 15.0,
+        "height": 14.0
+      },
       "freeboard_gal": 2.1,
       "displacement_gal": 2.75,
       "volume_method": "computed",
@@ -21,39 +33,102 @@
           "amount": "2-3 tbsp",
           "housing": "Fine mesh bag with a plastic closure, downstream of the mechanical pads, at least 0.5 in bypass clearance, clear of the impeller.",
           "installed": "2026-08-29",
-          "replace_interval_months": [6, 9],
+          "replace_interval_months": [
+            6,
+            9
+          ],
           "replace_fraction": 0.5
         }
       ],
       "cooling": "Open-top lid, 12V fans at 45 degrees across the surface, lighting raised 2-3 in, heater off or low. Evaporative cooling gives about 2.0-3.5 C below ambient, bounded by room wet-bulb.",
       "water_regime": "Distilled top-off only. No water changes.",
       "targets": {
-        "ph": {"min": 6.8, "max": 7.4, "note": "heading to 7.0-7.2 as the coral equilibrates"},
-        "temperature": {"min": 22.0, "max": 25.0, "note": "run surface fans above 25.5"},
-        "tds": {"min": 150, "max": 280},
-        "orp": {"min": 300, "max": null},
-        "gh": {"min": 105, "max": 215, "note": "6-12 dGH, the Neocaridina range"},
-        "kh": {"min": 35, "max": 70, "note": "2-4 dKH"},
-        "ammonia": {"min": 0, "max": 0.25},
-        "nitrite": {"min": 0, "max": 0.25},
-        "nitrate": {"min": 0, "max": 20}
+        "ph": {
+          "min": 6.8,
+          "max": 7.4,
+          "note": "heading to 7.0-7.2 as the coral equilibrates"
+        },
+        "temperature": {
+          "min": 22.0,
+          "max": 25.0,
+          "note": "run surface fans above 25.5"
+        },
+        "tds": {
+          "min": 150,
+          "max": 280
+        },
+        "orp": {
+          "min": 300,
+          "max": null
+        },
+        "gh": {
+          "min": 105,
+          "max": 215,
+          "note": "6-12 dGH, the Neocaridina range"
+        },
+        "kh": {
+          "min": 35,
+          "max": 70,
+          "note": "2-4 dKH"
+        },
+        "ammonia": {
+          "min": 0,
+          "max": 0.25
+        },
+        "nitrite": {
+          "min": 0,
+          "max": 0.25
+        },
+        "nitrate": {
+          "min": 0,
+          "max": 20
+        }
       },
       "prior_bands": {
         "_comment": "Ranges observed before logging began. Context, not readings - they have no timestamps and cannot be plotted.",
-        "ph": [6.77, 6.87],
-        "temperature": [23.8, 24.3],
-        "tds": [247, 254],
-        "ec": [494, 509],
-        "orp": [377, 440]
+        "ph": [
+          6.77,
+          6.87
+        ],
+        "temperature": [
+          23.8,
+          24.3
+        ],
+        "tds": [
+          247,
+          254
+        ],
+        "ec": [
+          494,
+          509
+        ],
+        "orp": [
+          377,
+          440
+        ]
       },
       "notes": [
         "The sensor lives in this tank, so it is the only one with continuous data."
-      ]
+      ],
+      "has_sensor": true
     },
     "staging": {
       "name": "Staging / quarantine tank",
-      "aliases": ["staging", "quarantine", "qt", "small", "little", "4", "4g", "4 gal"],
-      "dimensions_in": {"length": 17.0, "width": 6.6, "height": 9.5},
+      "aliases": [
+        "staging",
+        "quarantine",
+        "qt",
+        "small",
+        "little",
+        "4",
+        "4g",
+        "4 gal"
+      ],
+      "dimensions_in": {
+        "length": 17.0,
+        "width": 6.6,
+        "height": 9.5
+      },
       "freeboard_gal": 0.5,
       "displacement_gal": 0.1,
       "volume_method": "computed",
@@ -70,7 +145,10 @@
           "amount_target": "1-2 tbsp",
           "housing": "In the filter. Site it where there is real flow - coral in a dead corner does very little.",
           "installed": "2026-09-03",
-          "replace_interval_months": [6, 9],
+          "replace_interval_months": [
+            6,
+            9
+          ],
           "replace_fraction": 0.5,
           "note": "Undersupplied. Tiry describes it as 'only a little', and the 5 Sep hardness results are consistent with that."
         }
@@ -78,22 +156,49 @@
       "cooling": null,
       "water_regime": "Distilled top-off only. No water changes.",
       "targets": {
-        "ph": {"min": 6.8, "max": 7.4},
-        "temperature": {"min": 22.0, "max": 25.0},
-        "tds": {"min": 150, "max": 280},
-        "gh": {"min": 105, "max": 215, "note": "also needs to converge on the display tank before any transfer"},
-        "kh": {"min": 35, "max": 70},
-        "ammonia": {"min": 0, "max": 0.25},
-        "nitrite": {"min": 0, "max": 0.25},
-        "nitrate": {"min": 0, "max": 20}
+        "ph": {
+          "min": 6.8,
+          "max": 7.4
+        },
+        "temperature": {
+          "min": 22.0,
+          "max": 25.0
+        },
+        "tds": {
+          "min": 150,
+          "max": 280
+        },
+        "gh": {
+          "min": 105,
+          "max": 215,
+          "note": "also needs to converge on the display tank before any transfer"
+        },
+        "kh": {
+          "min": 35,
+          "max": 70
+        },
+        "ammonia": {
+          "min": 0,
+          "max": 0.25
+        },
+        "nitrite": {
+          "min": 0,
+          "max": 0.25
+        },
+        "nitrate": {
+          "min": 0,
+          "max": 20
+        }
       },
       "prior_bands": {},
       "notes": [
         "No continuous sensor. Test this tank separately with the Hanna checkers, or drop the probe in and allow 2-4 minutes to settle.",
         "Overstocked for its volume: six snails and nine shrimp in four gallons, on a filter that is weeks old, with no water changes. Four gallons gives almost no dilution buffer.",
         "Escape-proofing and at least an inch of headspace are live requirements here, not in the display tank. Both snail species climb.",
-        "Its whole function is holding animals at display-tank parameters so a transfer causes no osmotic shock. Clean ammonia says the tank is safe; it says nothing about whether it matches."
-      ]
+        "Its whole function is holding animals at display-tank parameters so a transfer causes no osmotic shock. Clean ammonia says the tank is safe; it says nothing about whether it matches.",
+        "The Kactoily probe normally lives in the display tank. It can be dropped in here to track a swap - allow 2-4 minutes to settle - but if it has been moved, say so when pasting a reading, or it will be logged against the wrong tank."
+      ],
+      "has_sensor": false
     }
   }
 }

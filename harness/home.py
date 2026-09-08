@@ -24,8 +24,18 @@ from pathlib import Path
 
 from . import REPO_ROOT
 
-DEFAULT_MODEL = "anthropic/claude-sonnet-5"
-DEFAULT_JUDGE_MODEL = "google/gemini-3.7-flash"
+# Both roles run the same model. Chosen on measurement, not on price alone:
+# gemini-3.8-flash passes all 16 evals at about a fifth of Sonnet 5's cost, and
+# as a judge it correctly fails every one of five deliberately-bad replies -
+# including the fabricated "I ran it, the dashboard shows..." that a judge must
+# never let through. gemini-2.5-flash was tried first and rejected: it failed
+# three cases on safety-relevant rules and, as a judge, passed a reply that
+# should have failed.
+#
+# The deployment's own model is set separately. If it diverges from this, the
+# evals stop measuring what ships - see specs/06.
+DEFAULT_MODEL = "google/gemini-3.8-flash"
+DEFAULT_JUDGE_MODEL = "google/gemini-3.8-flash"
 DEFAULT_PROVIDER = "openrouter"
 
 # The skills index is cached to disk and validated against an mtime/size

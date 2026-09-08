@@ -151,6 +151,8 @@ def cmd_tanks(st: Store, args) -> int:
         if tank.get("cooling"):
             out(f"   cooling      {tank['cooling']}")
         out(f"   regime       {tank.get('water_regime')}")
+        if tank.get("has_sensor"):
+            out("   sensor       the Kactoily probe lives in this tank")
         for note in tank.get("notes") or []:
             out(f"   note         {note}")
         out()

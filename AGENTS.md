@@ -37,10 +37,20 @@ tooling the deployment ignores.
 ```
 
 CI (`.github/workflows/ci.yml`) runs `ruff`, the skill's CLI on Python 3.11-3.13
-without hermes-agent installed, and `./shrimpy test`. It does **not** run
-`./shrimpy eval` — that needs an API key and costs about $2 a cold run. Run the
-evals locally before changing `SOUL.md` or a skill; snapshots make a re-run free
-until the definition actually changes.
+without hermes-agent installed, and `./shrimpy test` on every push. The
+behavioural evals run **monthly and on demand**, never on `pull_request` — a
+secret must not be exposed to whatever code a PR contains. Run them locally
+before changing `SOUL.md` or a skill; snapshots make a re-run free until the
+definition actually changes.
+
+**A live eval failure is not automatically your bug.** The runner exits 1 when
+the agent misbehaved and **3** when the provider was unreachable, and CI reports
+those differently. Do not "fix" a 402.
+
+**Pick the eval model to match the deployment, not to save money.**
+`gemini-2.5-flash` is 7x cheaper than the current default and fails three cases
+on safety-relevant rules; as a judge it passes replies that should fail. The
+current choice was measured — see the table in `README.md`.
 
 ## Specs
 

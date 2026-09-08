@@ -56,7 +56,7 @@ $EDITOR .env                     # OPENROUTER_API_KEY
 ./shrimpy prompt --skills        # what the model sees when deciding to open a skill
 ./shrimpy ask -v "is 6.6 too low"
 ./shrimpy chat                   # interactive REPL as Shrimpy
-./shrimpy eval                   # behavioural evals — cached; ~$1.70 on a cold run
+./shrimpy eval                   # behavioural evals — cached; ~$0.42 on a cold run
 ./shrimpy snapshots              # inspect or clear the eval cache
 ```
 
@@ -254,8 +254,27 @@ is not asserted on cases whose answer is already in the index.
 | variable | default | |
 |---|---|---|
 | `OPENROUTER_API_KEY` | — | required for `ask`, `chat`, `eval` |
-| `SHRIMPY_MODEL` | `anthropic/claude-sonnet-5` | also `-m` on any subcommand |
-| `SHRIMPY_JUDGE_MODEL` | `google/gemini-3.7-flash` | rubric grading |
+| `SHRIMPY_MODEL` | `google/gemini-3.8-flash` | also `-m` on any subcommand |
+| `SHRIMPY_JUDGE_MODEL` | `google/gemini-3.8-flash` | rubric grading |
+
+**The model was chosen by measurement, not by price.** The full suite was run
+against three candidates:
+
+| model | result | cost |
+|---|---|---|
+| `anthropic/claude-sonnet-5` | 16/16 | $1.95 |
+| **`google/gemini-3.8-flash`** | **16/16** | **$0.42** |
+| `google/gemini-2.5-flash` | 13/16 | $0.06 |
+
+`2.5-flash` was rejected on behaviour, not cost: it failed `salt-never` (asked
+which tank instead of refusing salt outright — salt is wrong in *both*),
+`cannot-check-sensor` (never said it could not reach the sensor), and it narrated
+tool output, which `SOUL.md` forbids. As a **judge** it was worse: given five
+deliberately-bad replies it passed one that should have failed. A silently
+permissive judge is worse than none. `3.8-flash` catches all five.
+
+Set `SHRIMPY_MODEL` to whatever the deployment runs. If the two diverge, the
+evals stop measuring the agent you actually ship.
 
 `harness/config.template.yaml` is harness-only and never shipped: the deployment
 generates its own `config.yaml` on the volume. It pins memory off, disables

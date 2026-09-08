@@ -297,6 +297,17 @@ lineage:
 
 ## Open questions
 
+0. **Resolved: the cost increase was absorbed by changing model, not scope.**
+   The suite runs 16/16 on `google/gemini-3.8-flash` for $0.42 against Sonnet 5's
+   $1.95. `gemini-2.5-flash` was tried and rejected on behaviour — it failed
+   `salt-never` and `cannot-check-sensor`, two of the cases that exist precisely
+   because those rules are hard to follow. Measuring beat guessing.
+
+   It also exposed a real gap in this spec's design: nothing told the agent which
+   tank a bare sensor paste belonged to, because `aqua` refuses to guess a tank
+   and the paste carries none. `tanks.json` now records `has_sensor`, and §7 says
+   a paste is that tank unless told otherwise.
+
 1. **The cost increase is real and larger than estimated.** A case that used ~29–40k tokens
    against the prose skill now runs 48–84k: the agent opens the skill, then makes several
    CLI calls, and each result is a tool message carried for the rest of the turn. Roughly

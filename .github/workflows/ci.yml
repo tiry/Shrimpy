@@ -6,15 +6,21 @@
 #   skill   the skill's CLI on system Python 3.11-3.13, no submodule, no venv
 #   test    the full offline suite, which needs hermes-agent installed
 #
-# WHAT THIS DELIBERATELY DOES NOT RUN
-#
-# `./shrimpy eval` — the behavioural evals. They need OPENROUTER_API_KEY and cost
-# roughly $2 a cold run. Run them locally before changing SOUL.md or a skill;
-# results are cached on a hash of the agent definition, so a re-run is free until
-# the definition actually changes. See specs/05.
+#   live    the behavioural evals against a real model — monthly and on demand
 #
 # There is no build artifact in this repo, so "does it install from clean" is the
 # equivalent check — that is `./shrimpy setup` in the `test` job.
+#
+# WHY `live` IS NOT ON EVERY PUSH
+#
+# It costs money (~$0.42 a run) and it is a drift detector, not a regression
+# gate: the offline suite already catches anything a code change can break. What
+# `live` catches is what offline structurally cannot — the model alias moving or
+# being retired, auth breaking, or the provider changing behaviour under a stable
+# name. That is a slow failure, so it runs on a schedule.
+#
+# It is also never triggered by `pull_request`. Secrets would be exposed to
+# whatever code that PR contains.
 
 name: CI
 
@@ -24,6 +30,14 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      live:
+        description: "Also run the behavioural evals against a real model (~$0.42)"
+        type: boolean
+        default: false
+  schedule:
+    # 06:00 UTC on the 1st. Monthly is deliberate: see the header.
+    - cron: "0 6 1 * *"
 
 # A second push to the same ref makes the first run's answer irrelevant.
 concurrency:
@@ -135,3 +149,75 @@ jobs:
         # the index leaves the agent answering fluently about tanks it no longer
         # knows. `prompt --skills` exits 1 when the block is empty.
         run: ./shrimpy prompt --skills
+
+  live:
+    name: behavioural evals (real model)
+    # Scheduled, or requested explicitly. Never on pull_request — see the header.
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.live)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Record the pinned hermes-agent revision
+        id: hermes
+        run: echo "sha=$(git -C vendor/hermes-agent rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          cache-suffix: ${{ steps.hermes.outputs.sha }}-${{ hashFiles('scripts/setup.sh') }}
+
+      - run: ./shrimpy setup
+
+      - name: Check the key is present
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "::error::OPENROUTER_API_KEY is not set. Add it under" \
+                 "Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+      - name: Run the evals live
+        id: evals
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        # --live ignores the snapshot cache, which is the entire point: a cached
+        # pass proves nothing about the model as it behaves today. -j 2 because
+        # OpenRouter reserves credit for each in-flight request's max_tokens, so
+        # higher parallelism can 402 on a healthy key.
+        #
+        # Exit codes: 0 all passed, 1 the agent misbehaved, 3 the provider was
+        # unreachable and nothing was proven.
+        run: |
+          set +e
+          ./shrimpy eval --live -j 2
+          code=$?
+          set -e
+          echo "code=${code}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Interpret the result
+        run: |
+          case "${{ steps.evals.outputs.code }}" in
+            0) echo "::notice::All behavioural evals passed against the live model." ;;
+            3) echo "::warning::The provider was unreachable, so nothing was proven." \
+                    "Not an agent failure — re-run when it recovers." ;;
+            *) echo "::error::The agent behaved wrongly against the live model." \
+                    "This is a real regression, not a provider blip."
+               exit 1 ;;
+          esac
+
+      - name: Keep the transcripts
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: eval-results
+          path: evals/results/
+          retention-days: 30

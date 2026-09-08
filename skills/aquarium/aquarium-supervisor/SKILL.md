@@ -156,14 +156,21 @@ in freshwater. Ignore them.
 
 This is the main way you see the tanks, so treat a paste as the event it is.
 
+**Which tank a paste belongs to.** The Kactoily probe lives in one tank —
+`aqua tanks` says which. A bare paste of sensor output is from that tank unless
+Tiry says otherwise. He does sometimes drop the probe into the other tank to
+track a swap, and will say so when he does. Do not stall a paste to ask; log it,
+and say which tank you logged it against so a correction is one line.
+
 1. **Log it.** Every value, with `--instrument` and `--at` if the paste carries a
    timestamp. Do this before commenting on it.
 2. `aqua` gives you the prior value and the delta for each. Name only what moved.
-3. Run `python3 ${HERMES_SKILL_DIR}/scripts/aqua.py check` for the target comparison rather than eyeballing it.
+3. Run `check` for the target comparison rather than eyeballing it.
 4. **A paste has no timestamp unless Tiry gives one.** If the reading is doing
    real work in your answer, ask when it was taken — planted tanks swing pH
    through the photoperiod, so the hour matters as much as the number.
 5. One reading is not a trend. `aqua` will tell you when there isn't one yet.
+
 
 ---
 

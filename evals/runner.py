@@ -35,6 +35,36 @@ RESULTS_DIR = REPO_ROOT / "evals" / "results"
 
 GREEN, RED, YELLOW, DIM, RESET = "\033[32m", "\033[31m", "\033[33m", "\033[2m", "\033[0m"
 
+# A run can fail because the provider is unavailable rather than because the
+# agent misbehaved. Those are different answers and must not share an exit code:
+# a red build should mean "Shrimpy is wrong", not "OpenRouter was down at 3am".
+PROVIDER_ERROR_MARKERS = (
+    "402",
+    "429",
+    "500",
+    "502",
+    "503",
+    "504",
+    "insufficient",
+    "credits",
+    "rate limit",
+    "rate-limit",
+    "overloaded",
+    "timeout",
+    "timed out",
+    "connection",
+    "temporarily unavailable",
+    "service unavailable",
+    "authentication",
+    "unauthorized",
+    "invalid api key",
+)
+
+
+def is_provider_error(error: str | None) -> bool:
+    lowered = (error or "").lower()
+    return any(marker in lowered for marker in PROVIDER_ERROR_MARKERS)
+
 # Hold the real stdout: harness.agent replaces sys.stdout with a per-thread
 # router to mute agent runs, and the report must not go through it.
 _STDOUT = sys.stdout
@@ -281,6 +311,8 @@ def main(args) -> int:
 
     passed = sum(1 for r in results if r.passed)
     cached = sum(1 for r in results if r.cached)
+    unreachable = [r for r in results if not r.passed and is_provider_error(r.error)]
+    misbehaved = [r for r in results if not r.passed and not is_provider_error(r.error)]
     colour = GREEN if passed == len(results) else RED
     # Per-row cost is what the run cost when it was recorded; the total is what
     # this invocation actually spent. Conflating them makes a free run look
@@ -290,6 +322,14 @@ def main(args) -> int:
     if cached == len(results):
         out_write(f"{DIM}all cached — nothing was measured live. --live to re-record.{RESET}")
 
+    if unreachable:
+        out_write(
+            f"\n{YELLOW}{len(unreachable)} case(s) could not reach the provider{RESET} — "
+            "not an agent failure:"
+        )
+        for res in unreachable:
+            out_write(f"  {DIM}{res.case_id}: {(res.error or '')[:120]}{RESET}")
+
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%fZ")
     out = RESULTS_DIR / f"{stamp}.jsonl"
@@ -298,4 +338,10 @@ def main(args) -> int:
             handle.write(json.dumps({"model": model, **res.__dict__}) + "\n")
     out_write(f"{DIM}{out.relative_to(REPO_ROOT)}{RESET}")
 
-    return 0 if passed == len(results) else 1
+    # Exit codes are the contract CI reads:
+    #   0  every case passed
+    #   1  the agent behaved wrongly — a real regression
+    #   3  the provider was unreachable, so nothing was proven either way
+    if passed == len(results):
+        return 0
+    return 1 if misbehaved else 3

@@ -601,3 +601,45 @@ def test_run_binds_the_session_id():
     source = inspect.getsource(agent_mod.run)
     assert "interception.rebind" in source
     assert source.index("interception.rebind") < source.index("run_conversation")
+
+
+# --------------------------------------------------------------------------- #
+# live-eval exit codes — the contract CI reads
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        "HTTP 402: This request would exceed your available credits",
+        "HTTP 429: rate limit exceeded",
+        "APIConnectionError: Connection error",
+        "HTTP 503 Service Unavailable",
+        "openai.APITimeoutError: Request timed out",
+        "HTTP 401: invalid api key",
+    ],
+)
+def test_provider_outages_are_not_agent_failures(error):
+    """A red build must mean "Shrimpy is wrong", not "OpenRouter was down at 3am".
+
+    The live job runs unattended on a schedule, so the difference decides whether
+    a failure is worth waking up for.
+    """
+    from evals.runner import is_provider_error
+
+    assert is_provider_error(error) is True
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        None,
+        "",
+        "AssertionError: did not run `aqua dose`",
+        "the agent recommended aquarium salt",
+    ],
+)
+def test_agent_failures_are_not_excused_as_outages(error):
+    """The dangerous direction: a real regression written off as a provider blip."""
+    from evals.runner import is_provider_error
+
+    assert is_provider_error(error) is False
