@@ -39,10 +39,15 @@ on:
     # 06:00 UTC on the 1st. Monthly is deliberate: see the header.
     - cron: "0 6 1 * *"
 
-# A second push to the same ref makes the first run's answer irrelevant.
+# A second push to the same ref makes the first push's answer irrelevant, so
+# those cancel. Scheduled and dispatched runs do not: a live run costs money and
+# takes two minutes, and having a routine push kill it halfway wastes both.
+#
+# Observed, not theorised — a push landing seconds after a dispatch put them in
+# the same group and one was cancelled.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 permissions:
   contents: read

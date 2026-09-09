@@ -643,3 +643,24 @@ def test_agent_failures_are_not_excused_as_outages(error):
     from evals.runner import is_provider_error
 
     assert is_provider_error(error) is False
+
+
+def test_a_push_cannot_cancel_a_paid_live_run():
+    """Concurrency groups are keyed by event.
+
+    Observed: a push landing seconds after a workflow_dispatch shared the group
+    and one run was cancelled. A live run costs money and takes minutes; a
+    routine push must not be able to kill it.
+    """
+    import yaml
+
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    )
+    concurrency = workflow["concurrency"]
+    assert "github.event_name" in concurrency["group"], (
+        "dispatch and push runs would share a concurrency group"
+    )
+    assert "push" in str(concurrency["cancel-in-progress"]), (
+        "only pushes should cancel their predecessors"
+    )

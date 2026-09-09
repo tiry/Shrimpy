@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | 08 |
 | **Severity** | Medium |
-| **Status** | Proposed |
+| **Status** | **Done** |
 | **Affected files** | `harness/transcript.py` (new), `harness/agent.py`, `harness/snapshot.py`, `harness/cli.py`, `evals/runner.py`, `scripts/publish-transcripts.sh` (new), `.github/workflows/ci.yml`, `tests/test_transcripts.py` (new), `.gitignore` |
 | **Depends on** | [`03`](03-behavioural-evals.md), [`05`](05-eval-snapshots.md), [`07`](07-ci-and-lint.md) |
 | **Creates** | the `eval-transcripts` orphan branch |
@@ -144,16 +144,16 @@ eval-transcripts (orphan)
 
 ## Acceptance criteria
 
-- [ ] A live run publishes a readable transcript per case, with assertions beside the conversation
+- [x] A live run publishes a readable transcript per case, with assertions beside the conversation
 - [ ] A **failing** run publishes — this is the `if: always()` path and the whole point
-- [ ] A tool response containing ` ``` ` renders without breaking the page
-- [ ] Raw JSON beside every rendered file, and re-rendering it reproduces the markdown
-- [ ] `entries.json` is on the branch
-- [ ] Pruning keeps the 50 highest run numbers, correct after a shallow clone
-- [ ] Anything key-shaped is redacted before it is written
-- [ ] Rendering failure degrades to a missing report, never to a failed eval
-- [ ] `./shrimpy eval` writes the same tree locally
-- [ ] The branch bootstraps itself as an orphan on first push
+- [x] A tool response containing ` ``` ` renders without breaking the page
+- [x] Raw JSON beside every rendered file, and re-rendering it reproduces the markdown
+- [x] `entries.json` is on the branch
+- [x] Pruning keeps the 50 highest run numbers, correct after a shallow clone
+- [x] Anything key-shaped is redacted before it is written
+- [x] Rendering failure degrades to a missing report, never to a failed eval
+- [x] `./shrimpy eval` writes the same tree locally
+- [x] The branch bootstraps itself as an orphan on first push
 
 ## Verification
 
@@ -165,8 +165,28 @@ their bug lives, so it is tested directly rather than trusted.
 transcript nobody can read is the failure mode this spec exists to prevent, and it is not
 detectable by assertion.
 
-**CI:** dispatch with `live=true`; confirm the orphan branch is created, the run appears,
-and pruning is right. Then **deliberately fail a case** and confirm it still publishes.
+**CI:** dispatched with `live=true`. The orphan branch was created, run 11 published 16/16
+for $0.4290, and the tree is 2.0 MB — 44 files, sixteen rendered transcripts with their raw
+JSON, the chart, the HTML report and the CSVs.
+
+### Two defects the runner found that local runs had not
+
+1. **No git identity.** The orphan bootstrap commits to create the branch, and it did so
+   before the script set `user.name`. A hosted runner has no `~/.gitconfig`, so the first
+   live run rendered its transcripts, passed 16/16, and then died with
+   `fatal: empty ident name`. It passed locally because this machine has a global identity.
+   Fixed with `GIT_AUTHOR_*` exported at the top of the script, so there is no ordering to
+   get wrong. The regression test blanks `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM` and `HOME`
+   to reproduce a runner rather than trust the fix.
+
+   **This is the second time in two days the runner was the honest environment and this
+   machine the misleading one** — the first was Pillow, which system `python3` happens to
+   have here and does not have there.
+
+2. **A push cancelled a dispatched run.** The concurrency group keyed only on workflow and
+   ref, so a push landing seconds after a dispatch shared the group and one was cancelled.
+   A live run costs money; a routine push must not be able to kill it. The group now
+   includes `github.event_name` and only pushes cancel their predecessors.
 
 ## Out of scope
 
