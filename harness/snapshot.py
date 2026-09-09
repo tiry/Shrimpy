@@ -41,21 +41,43 @@ JUDGE_DIR = REPO_ROOT / ".work" / "judgements"
 # Bump to invalidate every snapshot after a change to what a RunResult contains.
 SCHEMA = 4  # bumped when RunResult gained messages + system_prompt
 
+# Harness files that determine the run itself, and so belong in the digest. See
+# definition_sha for why the reporting modules are not here.
+RUN_INPUTS = (
+    "config.template.yaml",
+    "agent.py",
+    "interception.py",
+    "home.py",
+)
+
 
 def definition_sha() -> str:
     """A digest of the agent definition and the harness config that runs it.
 
     Covers SOUL.md, every file under skills/ (including references/, the CLI and
-    its bundled data), config.template.yaml, and the eval fixtures. Paths are
-    included so a rename invalidates, not just a content edit.
+    its bundled data), the eval fixtures, and the harness modules that decide
+    what the agent receives and what it is allowed to run. Paths are included so
+    a rename invalidates, not just a content edit.
 
     Fixtures are in here because they change the answer: a case that reads
     `aqua status` gets a different reply if the fixture's readings change, and a
     cached pass would otherwise keep reporting the old one.
+
+    RUN_INPUTS is the same argument one level up. Widening the aqua allow-list in
+    interception.py, changing RUN_TOOLSETS in agent.py, or switching the default
+    model in home.py all change what the agent can do — and every cached eval
+    would otherwise keep reporting a pass earned under the old rules. The manual
+    SCHEMA bump was the only guard, and a constant somebody has to remember is
+    the same failure mode as an assertion nobody validated.
+
+    Deliberately excluded: cli.py, inspect.py, transcript.py and this module.
+    They shape reporting, not the run, and hashing them would spend a live re-run
+    on a docstring.
     """
     sha = hashlib.sha256()
     sha.update(f"schema={SCHEMA}\n".encode())
-    paths = [REPO_ROOT / "SOUL.md", REPO_ROOT / "harness" / "config.template.yaml"]
+    paths = [REPO_ROOT / "SOUL.md"]
+    paths += [REPO_ROOT / "harness" / name for name in RUN_INPUTS]
     for tree in (REPO_ROOT / "skills", REPO_ROOT / "evals" / "fixtures"):
         if tree.is_dir():
             paths.extend(

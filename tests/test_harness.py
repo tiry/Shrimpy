@@ -791,3 +791,48 @@ def test_the_yaml_points_at_its_schema():
         encoding="utf-8"
     )[:600]
     assert "$schema" in header, "no yaml-language-server directive"
+
+
+def test_files_that_shape_the_run_invalidate_the_cache():
+    """A cached pass must not survive a change to what the agent may do.
+
+    agent.py, interception.py and home.py decide the toolsets, the aqua
+    allow-list and the default model. All three were outside the digest, so
+    widening the allow-list left twenty cached evals reporting passes earned
+    under the old rules. The only guard was a constant somebody had to remember
+    to bump.
+    """
+    from harness.snapshot import RUN_INPUTS, definition_sha
+
+    baseline = definition_sha()
+    for name in RUN_INPUTS:
+        path = REPO_ROOT / "harness" / name
+        assert path.is_file(), f"RUN_INPUTS names {name}, which does not exist"
+        original = path.read_bytes()
+        try:
+            path.write_bytes(original + b"\n# cache probe\n")
+            assert definition_sha() != baseline, f"editing {name} left the cache valid"
+        finally:
+            path.write_bytes(original)
+    assert definition_sha() == baseline, "probe did not restore cleanly"
+
+
+def test_reporting_only_modules_do_not_invalidate_the_cache():
+    """The other half of the trade: hashing these would spend a live re-run on a
+    docstring, and they cannot change a reply."""
+    from harness.snapshot import definition_sha
+
+    baseline = definition_sha()
+    for name in ("transcript.py", "cli.py", "inspect.py", "snapshot.py"):
+        path = REPO_ROOT / "harness" / name
+        if not path.is_file():
+            continue
+        original = path.read_bytes()
+        try:
+            path.write_bytes(original + b"\n# cache probe\n")
+            assert definition_sha() == baseline, (
+                f"{name} shapes reporting, not the run — hashing it makes every "
+                f"cosmetic edit cost a full live re-run"
+            )
+        finally:
+            path.write_bytes(original)
