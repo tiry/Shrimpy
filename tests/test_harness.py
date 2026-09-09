@@ -664,3 +664,31 @@ def test_a_push_cannot_cancel_a_paid_live_run():
     assert "push" in str(concurrency["cancel-in-progress"]), (
         "only pushes should cancel their predecessors"
     )
+
+
+def test_a_substring_ban_is_never_the_sole_arbiter():
+    """`not_matches` must be paired with a judge rubric.
+
+    Four times now a forbidden substring has rejected a correct reply, because
+    naming the wrong thing *in order to correct it* is good behaviour:
+
+      dose-display          banned "3.2 mL"; the agent named it to correct it
+      coral-scope           banned "do not add"; the agent scoped the caution
+      does-not-run-...      banned "command not found"
+      ph-drop-procedure     banned "pH adjuster"; the agent warned against them
+
+    A substring test cannot tell "recommends X" from "warns against X". Where a
+    case cares about that difference, a rubric has to be the arbiter, and the
+    regex is at most a cheap pre-filter.
+    """
+    from evals.runner import load_cases
+
+    offenders = [
+        case["id"]
+        for case in load_cases()
+        if (case.get("expect") or {}).get("not_matches") and not case.get("judge")
+    ]
+    assert not offenders, (
+        f"{offenders} forbid a substring with no rubric behind it. A banned phrase "
+        "is also how a correct reply names the thing it is rejecting."
+    )

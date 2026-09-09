@@ -84,10 +84,13 @@ identity (`agent/system_prompt.py:472-487`). Never use them in the harness.
 **`HERMES_HOME` must be set before `import run_agent`** — that module binds it at import
 time (`run_agent.py:127-129`).
 
-**When an eval fails, read the reply before touching the skill.** Twice now the harness was
-wrong and the agent was right: it named `3.2 mL` *in order to correct it*, and scoped a
-caution with a sentence containing "do not add". Forbidding a substring forbids the right
-answer too. Use a rubric judge for semantic properties.
+**When an eval fails, read the reply before touching the skill.** **Four times** now the
+harness was wrong and the agent was right — it named `3.2 mL` *in order to correct it*,
+scoped a caution with a sentence containing "do not add", chose a more targeted CLI verb
+than the one asserted, and said "don't dose chemical pH adjusters" against a case that
+banned the phrase. A substring test cannot tell "recommends X" from "warns against X".
+`tests/test_harness.py` now refuses a `not_matches` with no rubric behind it; every run
+renders a transcript, so read it first.
 
 **Skill content is input to the harness.** `skills_opened` once scanned tool responses for
 `"not found"`; `SKILL.md` §7 contains the phrase `command not found`, so a documentation

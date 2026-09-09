@@ -172,6 +172,15 @@ def check(case: dict, result) -> list[str]:
             f"{result.blocked_commands[:3]}"
         )
 
+    # Narrower than the above: ban invoking a particular thing, while allowing a
+    # harmless probe. `which aquadirector` returning nothing is how an agent
+    # confirms what the skill already told it; running `aquadirector dashboard`
+    # is the failure.
+    for pattern in expect.get("attempts_no_matching") or []:
+        hits = [c for c in result.blocked_commands if re.search(pattern, c, re.IGNORECASE)]
+        if hits:
+            failures.append(f"attempted /{pattern}/ -> {hits[:2]}")
+
     for verb in expect.get("runs_aqua") or []:
         if not any(f" {verb}" in call for call in result.aqua_calls):
             failures.append(

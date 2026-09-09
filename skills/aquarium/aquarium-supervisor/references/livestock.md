@@ -11,21 +11,27 @@ python3 ${HERMES_SKILL_DIR}/scripts/aqua.py livestock [--tank display|staging]  
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py status                                 rosters plus the water they are in
 ```
 
-The tolerance ranges below are species facts. Whether *these* animals are inside
-them is a question for `python3 ${HERMES_SKILL_DIR}/scripts/aqua.py check`, which compares the latest reading of every
-metric against that tank's targets. Compare against the measured water, not
-against a textbook ideal in isolation.
+**Nor are the tolerance ranges.** They live in `assets/reference.json` and come
+out of the CLI:
 
-Where sources disagree, the wider tolerance and the narrower *comfort* range are
-both given.
+```
+python3 ${HERMES_SKILL_DIR}/scripts/aqua.py species neocaridina
+python3 ${HERMES_SKILL_DIR}/scripts/aqua.py species          # all of them
+```
+
+They used to be repeated here as prose as well. Two copies of a range drift, and
+then the answer depends on which file was read — the exact failure this skill was
+restructured to prevent. This file explains *why* the ranges are what they are;
+`aqua species` says what they are, and `aqua check` says whether these tanks are
+inside them.
 
 ---
 
 ## Neocaridina davidi — cherry / dwarf shrimp
 
-**Comfort:** 20–24°C optimal (tolerates 18–29°C), pH 6.5–7.8, GH 6–12 dGH,
-KH 2–5 dKH, TDS 150–250 ppm (some keepers run to 400 with no ill effect).
-These are also in `assets/reference.json`, which is what `python3 ${HERMES_SKILL_DIR}/scripts/aqua.py check` uses.
+**Ranges:** `aqua species neocaridina`. They are cool-water animals that tolerate
+a wider band than they thrive in, and hardness matters more than pH — the pH
+range is broad, the GH range is not.
 
 **Molting.** Ecdysis roughly every 3–4 weeks. New cuticle calcification needs
 dissolved calcium — GH below 4 dGH is the classic cause of failed molts, where the
@@ -71,8 +77,8 @@ Investigate any death rather than writing it off as attrition, and record it —
 
 ## Fancy guppies (*Poecilia reticulata*)
 
-**Comfort:** 24–27°C preferred (tolerates ~22–28°C), pH 7.0–8.0 preferred, hard
-water preferred.
+**Ranges:** `aqua species guppy`. They prefer warmer, harder and more alkaline
+water than Neocaridina do, which is the tension in any shared tank.
 
 **Expect a mismatch, and check it before diagnosing.** In a shared tank the
 parameters are set for the shrimp, which puts guppies at the cool, soft end of
@@ -99,8 +105,8 @@ sex ratio is known is tracked there.
 
 ## Otocinclus / juvenile suckermouth catfish ("window suckers")
 
-**Comfort:** 22–26°C typical (sources range 20–28°C), pH 6.0–7.5, soft to
-moderately hard.
+**Ranges:** `aqua species otocinclus`. Softer and slightly more acidic than the
+other residents prefer, and the widest thermal band of the three fish.
 
 **Shoaling, and often kept alone.** Otocinclus do markedly better in groups of
 5–6+. A lone specimen hides more, grazes less, and gives you no group behaviour to

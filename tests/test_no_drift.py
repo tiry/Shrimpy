@@ -175,3 +175,104 @@ def test_soul_carries_no_specifics():
         "SOUL.md states tank specifics, contradicting its own closing line that facts "
         "live in the skill:\n" + "\n".join(findings)
     )
+
+
+# --------------------------------------------------------------------------- #
+# species ranges — the second copy the tank-attribution scan cannot see
+# --------------------------------------------------------------------------- #
+
+SPECIES_RANGE_RE = re.compile(
+    r"\b\d+(?:\.\d+)?\s*[-–]\s*\d+(?:\.\d+)?\s*(?:dGH|dKH|ppm|°?C)\b"
+    r"|\bpH\s*\d\.\d\s*[-–]\s*\d\.\d\b",
+    re.IGNORECASE,
+)
+
+
+# Scoped to the file whose job is species biology. Ranges elsewhere are about
+# water chemistry, not animals — "distilled water reads pH 5.5-5.8 in the jug"
+# and "aragonite dissolution stalls around 7.2-7.5" are mechanisms, and a
+# repo-wide scan flags both.
+SPECIES_FILE = SKILL_DIR / "references" / "livestock.md"
+
+
+def test_species_ranges_are_not_restated_in_prose():
+    """`reference.json` is the single source for what a species tolerates.
+
+    Regression: the Neocaridina ranges were in `reference.json` *and* spelled out
+    in `livestock.md` — "pH 6.5-7.8, GH 6-12 dGH, KH 2-5 dKH, TDS 150-250 ppm".
+    Two copies of a range drift, and then the answer to "what pH do Neocaridina
+    want" depends on which file the model happened to open.
+
+    The tank-attribution scan above cannot catch this: a species range is
+    attributed to a species, not to a tank or an instrument. `aqua species` is
+    the answer; prose explains why the range is what it is.
+    """
+    findings = []
+    in_fence = False
+    for number, line in enumerate(body(SPECIES_FILE).splitlines(), start=1):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or any(marker in line for marker in CLI_MARKERS):
+            continue
+        match = SPECIES_RANGE_RE.search(line)
+        if match:
+            findings.append(f"livestock.md:{number}: {match.group(0)!r}\n    {stripped[:100]}")
+    assert not findings, (
+        "a tolerance range is restated in prose; `aqua species` owns these:\n\n"
+        + "\n".join(findings)
+    )
+
+
+def test_the_species_scan_catches_the_real_regression(tmp_path):
+    sample = tmp_path / "SKILL.md"
+    for offender in (
+        "**Comfort:** pH 6.5-7.8, GH 6-12 dGH, KH 2-5 dKH, TDS 150-250 ppm.",
+        "They tolerate 18-29 C and prefer 20-24 C.",
+        "Neocaridina want 6-12 dGH.",
+    ):
+        sample.write_text(f"---\nname: x\n---\n\n{offender}\n", encoding="utf-8")
+        assert SPECIES_RANGE_RE.search(offender), f"scan missed: {offender}"
+
+
+def test_reference_json_still_holds_the_ranges():
+    """Removing them from prose is only correct if the CLI can still answer."""
+    import json
+
+    reference = json.loads(
+        (SKILL_DIR / "assets" / "reference.json").read_text(encoding="utf-8")
+    )
+    neocaridina = reference["species"]["neocaridina"]
+    for field in ("ph", "gh_degrees", "kh_degrees", "tds_ppm", "temperature_c"):
+        assert isinstance(neocaridina.get(field), list), f"{field} missing from reference.json"
+    assert neocaridina["gh_molt_floor_degrees"] == 4.0
+
+
+def test_livestock_notes_do_not_freeze_a_count():
+    """A count in a note is stale the moment an animal is added or dies.
+
+    Found by reading a transcript: after `livestock-change add` took the display
+    group to 10, its note still read "18 shrimp across both tanks". Same drift
+    the prose rewrite removed, hiding in a data field instead — and `aqua
+    livestock` prints the note directly beneath the live count, so the two
+    contradict each other on screen.
+    """
+    import json
+
+    counts = re.compile(
+        r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eighteen|nineteen|\d+)\s+"
+        r"(?:shrimp|snails?|guppies|nerites|grazers|animals)\b",
+        re.IGNORECASE,
+    )
+    for path in (
+        SKILL_DIR / "assets" / "initial" / "livestock.json",
+        REPO_ROOT / "evals" / "fixtures" / "aquarium" / "livestock.json",
+    ):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for animal in data["animals"]:
+            match = counts.search(animal.get("notes") or "")
+            assert not match, (
+                f"{path.name}: {animal['id']} note states {match.group(0)!r}. "
+                "The count is a field; a note repeating it goes stale."
+            )

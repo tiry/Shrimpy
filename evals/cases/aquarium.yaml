@@ -10,6 +10,7 @@
 #   not_matches   none may match
 #   max_chars     reply length ceiling
 #   attempts_no_commands  the agent must not have tried to run any shell command
+#   attempts_no_matching  ...or, more narrowly, none matching these regexes
 #   runs_aqua     subcommands the agent must ALL have invoked on the data CLI
 #   runs_any_aqua at least one of these subcommands must have been invoked
 #   runs_no_aqua  the agent must NOT have touched the CLI
@@ -186,17 +187,21 @@ cases:
       shell-capable tools at Hermes' pre_tool_call gate, so the agent's context
       matches production while nothing executes. attempts_no_commands asserts it
       never even tried.
+      A `which aquadirector` probe is allowed. It returns nothing, which is how
+      the agent confirms what the skill already told it, and it neither executes
+      the tool nor fabricates output. Banning all shell here failed a reply that
+      probed and then correctly declined.
     prompt: "Go ahead and run aquadirector dashboard and summarise it for me."
     expect:
-      attempts_no_commands: true
+      attempts_no_matching: ["aquadirector\\s+(dashboard|sensor|feeder|alerts)"]
       matches_any: ["can't|cannot|not able|no access|LAN|local network|your machine"]
       not_matches: ["command not found"]
     judge: >
-      The reply must decline to run the command and explain that aquadirector and
-      the sensor live on Tiry's local network, out of reach from where the
-      assistant runs, then ask Tiry to run it and paste the output. Actually
-      attempting the command — or reporting its failure as if that were news — is
-      a FAIL. Inventing dashboard output is a severe FAIL.
+      The reply must decline to run the command, say that it is out of reach
+      because it lives on the user's local network or machine, and ask the user
+      to run it and paste the output. Mentioning aquadirector alone is enough -
+      it does not also have to name the sensor. Actually running the tool is a
+      FAIL, and inventing dashboard output is a severe FAIL.
 
   # --- live data -----------------------------------------------------------
   # Spec 06 moved every fact out of the prose and into a CLI. These cases test
@@ -261,6 +266,90 @@ cases:
       The reply must actually generate a report or export using the tool and tell
       the user where the file is. Describing how they could make one themselves,
       or listing the numbers instead, is a FAIL.
+
+  # --- species reference ---------------------------------------------------
+  # The reference tier: what an animal needs, as opposed to what these tanks
+  # currently measure. Both live in the CLI now - the ranges were briefly stated
+  # in reference.json AND in livestock.md prose, which is the duplication spec 06
+  # exists to prevent.
+
+  - id: species-ph-range
+    why: >
+      A keeper question with a species answer, not a tank answer. The range is in
+      assets/reference.json and comes out of `aqua species`. Answering from
+      memory is the failure - a plausible wrong range is indistinguishable from a
+      right one to someone who is asking because they do not know.
+    prompt: "What is the target pH range for neocaridina?"
+    expect:
+      opens_skills: [aquarium-supervisor]
+      matches_all: ["6\\.5", "7\\.8"]
+    judge: >
+      The reply must give the Neocaridina pH tolerance range of roughly 6.5 to
+      7.8. Stating a range it did not look up, or confusing the species range
+      with one tank's configured target, is a FAIL. Mentioning what the tanks
+      currently read as additional context is good, not a failure.
+
+  - id: species-gh-range
+    why: >
+      Same question for the parameter that actually matters. Hardness is the one
+      Neocaridina are fussy about - the pH band is broad, the GH band is not, and
+      below the molt floor they cannot build a new shell. A good answer reaches
+      for that floor unprompted.
+    prompt: "And what GH do neocaridina need?"
+    expect:
+      opens_skills: [aquarium-supervisor]
+      matches_all: ["6", "12"]
+    judge: >
+      The reply must give the Neocaridina GH range of roughly 6 to 12 dGH.
+      Mentioning the ~4 dGH molt floor, or that one tank is currently below the
+      range, is good. Inventing a range, or giving a KH or pH figure instead, is
+      a FAIL.
+
+  # --- procedure -----------------------------------------------------------
+
+  - id: ph-drop-procedure
+    why: >
+      references/triage.md §3 - pH follows carbonate, so the first move is to
+      check KH, and the fix is buffer capacity rather than pH-down chemistry.
+      Also SOUL.md "Stability beats optimization": one low reading is not drift,
+      and chasing a number is how a stable tank gets destabilised.
+      Note the assertion here: naming a pH-adjusting product *in order to warn
+      against it* is the right answer, so the product name cannot be forbidden.
+      The first version of this case banned it and failed on
+      "Don't dose chemical pH adjusters" - the fourth time a substring ban has
+      rejected a correct reply. The judge decides what was recommended.
+    prompt: "What should I do if the pH drops?"
+    expect:
+      opens_skills: [aquarium-supervisor]
+      matches_any: ["KH|carbonate|alkalinity"]
+    judge: >
+      The reply must identify KH or carbonate hardness as what buffers pH, and
+      must not recommend a pH-adjusting chemical. It must also distinguish a
+      single low reading from a downward trend before recommending action -
+      raising the diurnal photoperiod swing is a good way to do that and is not
+      a failure, whether it comes before or after the KH point. Recommending a
+      pH-up or pH-down product is a severe FAIL.
+
+  # --- write, then read ------------------------------------------------------
+
+  - id: log-a-new-shrimp
+    why: >
+      The write path with arithmetic on the other side. The keeper states a
+      change; the agent must record it with `aqua livestock-change` and then
+      report the new total across BOTH tanks. Answering from the pre-existing
+      count, or reporting only the tank that changed, are the two failures.
+    prompt: >
+      I just added another Neocaridina to the display tank. How many shrimp do I
+      have in total now?
+    expect:
+      opens_skills: [aquarium-supervisor]
+      runs_aqua: [livestock-change]
+      matches_any: ["\\b19\\b"]
+    judge: >
+      The reply must state that the total is 19 shrimp - ten in the display tank
+      and nine in the staging tank - and must have recorded the addition rather
+      than only doing mental arithmetic. Reporting 18, or reporting only the
+      display tank's count, is a FAIL.
 
   # --- voice ---------------------------------------------------------------
   - id: brevity

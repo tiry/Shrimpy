@@ -164,6 +164,12 @@ def cmd_livestock(st: Store, args) -> int:
     if args.tank:
         tank_id = st.resolve_tank(args.tank)
         animals = [a for a in animals if a.get("tank") == tank_id]
+    if args.species:
+        key = args.species.strip().lower()
+        animals = [
+            a for a in animals
+            if key in str(a.get("species", "")).lower() or key in str(a.get("name", "")).lower()
+        ]
     for animal in animals:
         flag = "" if animal.get("confidence") == "confirmed" else f"  [{animal.get('confidence')}]"
         out(f"{animal['tank']:<9} {animal['count']:>3}x {animal['name']}{flag}")
@@ -172,6 +178,68 @@ def cmd_livestock(st: Store, args) -> int:
     total = sum(a.get("count", 0) for a in animals)
     out(f"\n{total} animals across {len(set(a['tank'] for a in animals))} tank(s)")
     return emit(animals, args)
+
+
+def cmd_species(st: Store, args) -> int:
+    """Tolerance ranges for the animals, from reference.json.
+
+    The single source for "what does this species need". The same numbers used
+    to live in references/livestock.md as prose as well, which is the duplication
+    spec 06 exists to prevent - two copies of a range drift, and then the answer
+    depends on which file happened to be read.
+    """
+    species = store.reference().get("species", {})
+    wanted = args.name
+    if wanted:
+        key = wanted.strip().lower()
+        matches = [
+            k for k, v in species.items()
+            if key == k
+            or key in k
+            or key in str(v.get("name", "")).lower()
+            or key in str(v.get("common", "")).lower()
+        ]
+        if not matches:
+            raise AquaError(
+                f"no species {wanted!r}. Known: " + ", ".join(sorted(species))
+            )
+    else:
+        matches = sorted(species)
+
+    payload = {}
+    for key in matches:
+        spec = species[key]
+        payload[key] = spec
+        out(f"== {spec.get('common', key)} ({spec.get('name', key)})")
+        for label, field, unit in (
+            ("temperature", "temperature_c", "C"),
+            ("  optimal", "temperature_optimal_c", "C"),
+            ("pH", "ph", ""),
+            ("GH", "gh_degrees", "dGH"),
+            ("KH", "kh_degrees", "dKH"),
+            ("TDS", "tds_ppm", "ppm"),
+            ("  tolerated", "tds_tolerated_ppm", "ppm"),
+        ):
+            value = spec.get(field)
+            if isinstance(value, list) and len(value) == 2:
+                suffix = f" {unit}" if unit else ""
+                out(f"   {label:<12} {value[0]}-{value[1]}{suffix}")
+        if spec.get("gh_molt_floor_degrees"):
+            out(f"   {'molt floor':<12} {spec['gh_molt_floor_degrees']} dGH — below this "
+                "there is not enough dissolved calcium to calcify a new shell")
+        if spec.get("shoal_minimum"):
+            out(f"   {'shoal':<12} {spec['shoal_minimum']}+ — fewer than this and they hide")
+        if spec.get("adult_volume_gallons_each"):
+            low, high = spec["adult_volume_gallons_each"]
+            out(f"   {'volume':<12} {low}-{high} gal per adult")
+        for note in spec.get("notes") or []:
+            out(f"   - {note}")
+        out()
+
+    if not args.name:
+        out("These are species facts, not this system's targets. "
+            "`aqua check` compares the tanks against their own configured bands.")
+    return emit(payload, args)
 
 
 def cmd_inventory(st: Store, args) -> int:
@@ -363,18 +431,35 @@ def cmd_livestock_change(st: Store, args) -> int:
     index = {a["id"]: a for a in animals}
 
     if args.action == "add":
-        if not (args.id and args.name and args.tank):
-            raise AquaError("add needs --id, --name, --tank and --count")
-        tank_id = st.resolve_tank(args.tank)
+        if not args.id:
+            raise AquaError("add needs --id (see `aqua livestock` for existing ids)")
         if args.id in index:
-            index[args.id]["count"] += args.count
-            out(f"{args.id}: now {index[args.id]['count']}")
+            # Adding to a group that already exists - the common case, and it
+            # needs nothing but the id and a count. Requiring --name here made
+            # "I added another shrimp" impossible to record.
+            entry = index[args.id]
+            entry["count"] += args.count
+            st.add_event({
+                "at": calc.parse_when(args.at), "tank": entry["tank"], "type": "acquisition",
+                "detail": f"{args.count}x {entry['name']}", "note": args.note,
+            })
+            out(f"{entry['id']}: now {entry['count']}x {entry['name']} in {entry['tank']}")
         else:
+            if not (args.name and args.tank):
+                raise AquaError(
+                    f"{args.id!r} is new, so it needs --name and --tank as well. "
+                    "Existing ids: " + (", ".join(sorted(index)) or "none")
+                )
+            tank_id = st.resolve_tank(args.tank)
             animals.append(calc.as_dict(
                 id=args.id, tank=tank_id, species=args.species, name=args.name,
                 count=args.count, added=calc.parse_when(args.at), confidence="confirmed",
                 notes=args.note,
             ))
+            st.add_event({
+                "at": calc.parse_when(args.at), "tank": tank_id, "type": "acquisition",
+                "detail": f"{args.count}x {args.name}", "note": args.note,
+            })
             out(f"added {args.count}x {args.name} to {tank_id}")
     elif args.action == "remove":
         entry = index.get(args.id) or _die(f"no livestock entry {args.id!r}")
@@ -575,7 +660,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("livestock", help="who lives where")
     tank_arg(p)
+    p.add_argument("--species", default=None,
+                   help="only this species, so a total is one call not arithmetic")
     p.set_defaults(func=cmd_livestock)
+
+    p = sub.add_parser("species", help="tolerance ranges for a species (pH, GH, KH, TDS)")
+    p.add_argument("name", nargs="?", default=None,
+                   help="neocaridina, guppy, otocinclus, mystery_snail, nerite")
+    p.set_defaults(func=cmd_species)
 
     p = sub.add_parser("inventory", help="what is on the shelf and whether it may be used")
     p.add_argument("--class", dest="klass", default=None)

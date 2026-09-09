@@ -62,6 +62,8 @@ number from memory is the failure this design exists to prevent.
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py status --tank staging
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py tanks
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py livestock --tank display
+python3 ${HERMES_SKILL_DIR}/scripts/aqua.py livestock --species neocaridina
+python3 ${HERMES_SKILL_DIR}/scripts/aqua.py species neocaridina
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py inventory
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py inventory --class never
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py readings ph --tank display
@@ -80,6 +82,7 @@ python3 ${HERMES_SKILL_DIR}/scripts/aqua.py log ph 6.91 --tank display --instrum
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py log gh 75 --tank staging --instrument hi735 --note "after first swap"
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py log phosphate 0.25 --tank display --instrument advatec --min 0 --max 0.25
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py event water-change --tank staging --detail "15% with display water"
+python3 ${HERMES_SKILL_DIR}/scripts/aqua.py livestock-change add --id display-neocaridina --count 1
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py livestock-change remove --id staging-neocaridina --count 1
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py inventory-change open prime
 python3 ${HERMES_SKILL_DIR}/scripts/aqua.py question answer --id 4 --text "6 female, 3 male"
@@ -87,6 +90,16 @@ python3 ${HERMES_SKILL_DIR}/scripts/aqua.py question answer --id 4 --text "6 fem
 
 Use `--min` and `--max` when the reading was a band rather than a point — a colour
 chart between two swatches is a band, and flattening it invents precision.
+
+**A species question is not a tank question.** What an animal *tolerates* comes
+from `aqua species`; what these tanks *currently read* comes from `aqua status`
+and `aqua check`. Do not answer one with the other, and do not answer either from
+memory — a plausible wrong range is indistinguishable from a right one to someone
+asking because they do not know.
+
+**Record roster changes as they are mentioned.** `livestock-change add --id <id>
+--count N` needs nothing else for a group that already exists, and dates the
+change so "how long have they been in there" stops being unanswerable.
 
 `--instrument` matters. Some instruments are not trusted for some metrics — the
 strip pH pad reads demonstrably low, the liquid kit's pH is unreliable under warm

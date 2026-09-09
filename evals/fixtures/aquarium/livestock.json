@@ -9,7 +9,7 @@
       "count": 9,
       "added": null,
       "confidence": "confirmed",
-      "notes": "18 shrimp across both tanks - a small population. Investigate any death."
+      "notes": "A small colony, so every loss is proportionally significant. Investigate any death rather than writing it off as attrition."
     },
     {
       "id": "display-guppy",
@@ -39,7 +39,7 @@
       "count": 3,
       "added": null,
       "confidence": "confirmed",
-      "notes": "Adults are commonly given 2.5-5 gal each. Three of them in a shared four gallons is the core of the overstocking problem."
+      "notes": "Adults are commonly given 2.5-5 gal each, which is the core of the overstocking problem in a four-gallon tank."
     },
     {
       "id": "staging-nerite",
@@ -49,7 +49,7 @@
       "count": 3,
       "added": null,
       "confidence": "confirmed",
-      "notes": "Grazes biofilm only. The tank is planted, so there is real grazing surface, but a young setup carries thin biofilm for six grazers plus nine shrimp."
+      "notes": "Grazes biofilm only. The tank is planted, so there is real grazing surface, but a young setup carries thin biofilm and every grazer competes for it."
     },
     {
       "id": "staging-neocaridina",
@@ -59,7 +59,7 @@
       "count": 9,
       "added": null,
       "confidence": "confirmed",
-      "notes": "Nine animals on a 3-4 week molt clock in the tank with the lowest GH."
+      "notes": "On a 3-4 week molt clock, in the tank with the lowest GH."
     }
   ]
 }
