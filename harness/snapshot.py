@@ -39,7 +39,7 @@ SNAPSHOT_DIR = REPO_ROOT / ".work" / "snapshots"
 JUDGE_DIR = REPO_ROOT / ".work" / "judgements"
 
 # Bump to invalidate every snapshot after a change to what a RunResult contains.
-SCHEMA = 3  # bumped when RunResult gained aqua_calls
+SCHEMA = 4  # bumped when RunResult gained messages + system_prompt
 
 
 def definition_sha() -> str:

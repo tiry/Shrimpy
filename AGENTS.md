@@ -43,6 +43,10 @@ secret must not be exposed to whatever code a PR contains. Run them locally
 before changing `SOUL.md` or a skill; snapshots make a re-run free until the
 definition actually changes.
 
+**Read the transcript before touching the skill.** Every eval run renders one to
+`.work/transcripts/`, and live CI runs publish to the `eval-transcripts` branch. Three
+times the case was wrong and the agent was right; the reply is where that shows.
+
 **A live eval failure is not automatically your bug.** The runner exits 1 when
 the agent misbehaved and **3** when the provider was unreachable, and CI reports
 those differently. Do not "fix" a 402.

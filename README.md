@@ -132,8 +132,17 @@ properties ("does it avoid presenting an unmeasured number as fact").
 ./shrimpy eval --no-judge                 # regex assertions only, cheaper
 ```
 
-Results append to `evals/results/<timestamp>.jsonl` so a regression can be diffed
-against an earlier run.
+Results append to `evals/results/<timestamp>.jsonl`, and every run renders a
+readable transcript to `.work/transcripts/<timestamp>/` — the conversation, the
+tool calls and their results, with the assertions beside them.
+
+Live CI runs publish the same tree to the
+[`eval-transcripts`](https://github.com/tiry/Shrimpy/tree/eval-transcripts)
+branch, **including failing runs** — those are the ones worth reading, and they
+happen when nobody is watching. See [`specs/08`](specs/08-eval-transcripts.md).
+
+This exists because three times the *case* was wrong and the agent was right, and
+each was diagnosable only by reading the reply.
 
 ### Snapshots
 

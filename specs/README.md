@@ -1,7 +1,7 @@
 # Specs
 
 Scoped, executable work items for this repository. **The number is the execution order** —
-work `01` through `06`.
+work `01` through `08`.
 
 The convention is borrowed from [`tairy-agent/specs`](../../tairy-agent/specs/README.md),
 which consumes this repo. Same numbering, same section layout, same rule about citations.
@@ -27,7 +27,8 @@ drift — if one doesn't match, trust the quoted text.
 
 `01` establishes the repo and the harness. `02`–`05` are each a distinct testing capability
 built on it, in the order they were needed. `06` is the first spec that changes what the
-agent *is* rather than how it is tested.
+agent *is* rather than how it is tested. `07` puts the whole lot on CI, and `08` makes a
+live run readable rather than merely green.
 
 A ✅ marks a spec that has been implemented.
 
@@ -39,6 +40,8 @@ A ✅ marks a spec that has been implemented.
 | [04](04-access-boundary.md) ✅ | Access boundary | The agent runs in the cloud; the aquarium is on a LAN. It has a real terminal and a skill full of commands it cannot run | High |
 | [05](05-eval-snapshots.md) ✅ | Eval snapshots | A full eval pass costs ~$1 and draws a fresh sample, so a regression and model variance are indistinguishable | Medium |
 | [06](06-live-data-and-reporting.md) ✅ | Live data and reporting | ~150 facts are restated across the skill and eight have already contradicted each other; nothing can be updated | High |
+| [07](07-ci-and-lint.md) ✅ | CI and a lint baseline | Nothing runs on push, there is no lint config at all, and no schedule catches the model moving under a stable alias | Medium |
+| [08](08-eval-transcripts.md) | Eval transcripts | A live run says pass or fail and cannot show what the agent said — three times the case was wrong and only the reply revealed it | Medium |
 
 ## Dependencies
 
@@ -47,9 +50,11 @@ A ✅ marks a spec that has been implemented.
      ├── 03 ── 05      (snapshots cache eval results, so evals must exist first)
      └── 04            (interception needs the harness's agent construction)
 02,03,04,05 ── 06      (06 rewrites the skill; every existing check is its safety net)
+02,03,06 ────── 07     (CI runs what they built; the live job needs the evals to exist)
+03,05,07 ────── 08     (transcripts render eval results, cache them, and publish from CI)
 ```
 
-One sequencing note that matters more than the rest:
+Two sequencing notes that matter more than the rest:
 
 - **[`06`](06-live-data-and-reporting.md) is the reason `02`–`05` were worth building.** It
   deletes most of the skill's prose and replaces it with a CLI. Doing that against a repo

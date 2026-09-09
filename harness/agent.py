@@ -60,6 +60,37 @@ CLARIFY_ANSWER = (
     "State your assumption explicitly and continue.]"
 )
 
+# Anything shaped like a provider key is scrubbed before a transcript is stored.
+#
+# Nothing key-shaped appears in `messages` today — the key reaches the provider
+# through the client, never through a message. This is scrubbed on the way *in*
+# rather than on the way out because the repo is public and the cost of being
+# wrong once is a rotated key: a tool that echoed an environment variable, a
+# provider that quoted a request back in an error, a future skill that reads
+# `.env`. Cheap, and it cannot be forgotten at render time.
+_SECRET_PATTERNS = (
+    re.compile(r"sk-or-v1-[A-Za-z0-9]{8,}"),
+    re.compile(r"sk-ant-[A-Za-z0-9_-]{8,}"),
+    re.compile(r"sk-proj-[A-Za-z0-9_-]{8,}"),
+    re.compile(r"gh[pousr]_[A-Za-z0-9]{16,}"),
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+)
+REDACTED = "[redacted]"
+
+
+def redact(value):
+    """Recursively replace anything key-shaped. Structure is preserved."""
+    if isinstance(value, str):
+        for pattern in _SECRET_PATTERNS:
+            value = pattern.sub(REDACTED, value)
+        return value
+    if isinstance(value, dict):
+        return {k: redact(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [redact(v) for v in value]
+    return value
+
 
 class _StdoutRouter(io.TextIOBase):
     """A ``sys.stdout`` replacement that can be muted per-thread.
@@ -136,6 +167,11 @@ class RunResult:
     tool_calls: list[str] = field(default_factory=list)
     blocked_commands: list[str] = field(default_factory=list)
     aqua_calls: list[str] = field(default_factory=list)
+    # The full exchange, kept so a run can be read rather than merely scored.
+    # Three case-design bugs were found by reading a reply; none were visible in
+    # any other field. See specs/08.
+    messages: list[dict] = field(default_factory=list)
+    system_prompt: str = ""
     api_calls: int = 0
     total_tokens: int = 0
     cost_usd: float | None = None
@@ -154,6 +190,8 @@ class RunResult:
             "tool_calls": self.tool_calls,
             "blocked_commands": self.blocked_commands,
             "aqua_calls": self.aqua_calls,
+            "messages": self.messages,
+            "system_prompt": self.system_prompt,
             "api_calls": self.api_calls,
             "total_tokens": self.total_tokens,
             "cost_usd": self.cost_usd,
@@ -169,6 +207,19 @@ class RunResult:
     def from_dict(cls, payload: dict[str, Any]) -> RunResult:
         known = {f for f in cls.__dataclass_fields__}  # noqa: F821
         return cls(**{k: v for k, v in payload.items() if k in known})
+
+
+def _system_prompt_of(agent) -> str:
+    """The assembled system prompt, for the record.
+
+    Not part of ``messages`` — Hermes prepends it at API-call time — so it has
+    to be asked for separately. Stored once per run rather than per case: it is
+    identical across cases apart from the ephemeral home path.
+    """
+    builder = getattr(agent, "_build_system_prompt", None)
+    if builder is None:
+        return ""
+    return builder(None) or ""
 
 
 def _tool_calls(messages: list) -> list[dict]:
@@ -375,8 +426,20 @@ def run(
         with _muted_stdout():
             raw = agent.run_conversation(prompt)
 
-        functions = _tool_calls(raw.get("messages") or [])
-        results = _tool_results(raw.get("messages") or [])
+        raw_messages = raw.get("messages") or []
+        functions = _tool_calls(raw_messages)
+        results = _tool_results(raw_messages)
+
+        # Capturing the transcript must never cost us the result. A malformed
+        # message or an oversized payload should lose the report, not the run.
+        try:
+            transcript = redact([m for m in raw_messages if isinstance(m, dict)])
+        except Exception:  # noqa: BLE001
+            transcript = []
+        try:
+            system_prompt = redact(_system_prompt_of(agent))
+        except Exception:  # noqa: BLE001
+            system_prompt = ""
         result = RunResult(
             prompt=prompt,
             final=raw.get("final_response") or "",
@@ -384,6 +447,8 @@ def run(
             tool_calls=[fn.get("name", "?") for fn in functions],
             blocked_commands=interceptor.commands if interceptor else [],
             aqua_calls=interceptor.aqua_calls if interceptor else [],
+            messages=transcript,
+            system_prompt=system_prompt,
             api_calls=raw.get("api_calls") or 0,
             total_tokens=raw.get("total_tokens") or 0,
             cost_usd=raw.get("estimated_cost_usd"),

@@ -19,6 +19,7 @@ diffed against an earlier run.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -29,9 +30,12 @@ from pathlib import Path
 
 import yaml
 
+from harness import transcript
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CASES_DIR = REPO_ROOT / "evals" / "cases"
 RESULTS_DIR = REPO_ROOT / "evals" / "results"
+TRANSCRIPTS_DIR = REPO_ROOT / ".work" / "transcripts"
 
 GREEN, RED, YELLOW, DIM, RESET = "\033[32m", "\033[31m", "\033[33m", "\033[2m", "\033[0m"
 
@@ -59,6 +63,25 @@ PROVIDER_ERROR_MARKERS = (
     "unauthorized",
     "invalid api key",
 )
+
+
+def _commit() -> str:
+    import subprocess
+
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=10,
+        ).stdout.strip() or "?"
+    except Exception:  # noqa: BLE001
+        return "?"
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
 
 
 def is_provider_error(error: str | None) -> bool:
@@ -89,6 +112,9 @@ class CaseResult:
     judge_note: str = ""
     error: str | None = None
     cached: bool = False
+    messages: list = field(default_factory=list)
+    system_prompt: str = ""
+    model: str = ""
     blocked_commands: list[str] = field(default_factory=list)
     aqua_calls: list[str] = field(default_factory=list)
 
@@ -206,6 +232,9 @@ def run_case(
             error=result.error or "empty response",
             wall_s=time.monotonic() - started,
             blocked_commands=result.blocked_commands,
+            messages=result.messages,
+            system_prompt=result.system_prompt,
+            model=result.model,
         )
 
     failures = check(case, result)
@@ -236,6 +265,9 @@ def run_case(
         cached=result.cached,
         blocked_commands=result.blocked_commands,
         aqua_calls=result.aqua_calls,
+        messages=result.messages,
+        system_prompt=result.system_prompt,
+        model=result.model,
     )
 
 
@@ -337,6 +369,25 @@ def main(args) -> int:
         for res in results:
             handle.write(json.dumps({"model": model, **res.__dict__}) + "\n")
     out_write(f"{DIM}{out.relative_to(REPO_ROOT)}{RESET}")
+
+    # Rendered transcripts. Fail-open: a report is worth less than a result, so
+    # nothing here may raise into the caller. See specs/08.
+    try:
+        target = Path(os.environ.get("SHRIMPY_TRANSCRIPT_DIR") or (TRANSCRIPTS_DIR / stamp))
+        transcript.write_run(
+            target,
+            meta={
+                "run_label": os.environ.get("SHRIMPY_RUN_LABEL") or stamp,
+                "model": model,
+                "started": stamp,
+                "commit": _commit(),
+            },
+            cases={c["id"]: c for c in cases},
+            results=[r.__dict__ for r in results],
+        )
+        out_write(f"{DIM}{_display_path(target)}/index.md{RESET}")
+    except Exception as exc:  # noqa: BLE001
+        out_write(f"{YELLOW}transcripts not written: {exc}{RESET}")
 
     # Exit codes are the contract CI reads:
     #   0  every case passed
