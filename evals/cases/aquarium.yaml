@@ -274,5 +274,5 @@ cases:
       under test.
     prompt: "Which tank has the snails in it?"
     expect:
-      matches_any: ["staging|quarantine|4[ -]?gal"]
+      matches_any: ["THIS_WILL_NEVER_MATCH_deliberate_ci_probe"]
       max_chars: 400
