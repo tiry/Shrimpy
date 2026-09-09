@@ -1,0 +1,7 @@
+tank,id,name,species,count,added,confidence,notes
+display,display-neocaridina,Neocaridina shrimp,neocaridina,9,,confirmed,18 shrimp across both tanks - a small population. Investigate any death.
+display,display-guppy,Fancy guppy,guppy,9,,confirmed,"Sex ratio unknown. If mixed, fry within weeks and a compounding bioload in a tank with no nitrate export."
+display,display-sucker,Suckermouth catfish,otocinclus,1,,unconfirmed,"Otocinclus or juvenile pleco - not established which. Alone, and Otocinclus are shoaling animals needing 5-6+. A common pleco reaches 30 cm and would outgrow this tank entirely. The belly check is the only health signal available."
+staging,staging-mystery-snail,Albino mystery snail,mystery_snail,3,,confirmed,Adults are commonly given 2.5-5 gal each. Three of them in a shared four gallons is the core of the overstocking problem.
+staging,staging-nerite,Red Racer nerite,nerite,3,,confirmed,"Grazes biofilm only. The tank is planted, so there is real grazing surface, but a young setup carries thin biofilm for six grazers plus nine shrimp."
+staging,staging-neocaridina,Neocaridina shrimp,neocaridina,9,,confirmed,Nine animals on a 3-4 week molt clock in the tank with the lowest GH.

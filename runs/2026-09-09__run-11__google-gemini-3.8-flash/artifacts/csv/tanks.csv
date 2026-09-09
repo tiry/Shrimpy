@@ -1,0 +1,3 @@
+tank,name,length_in,width_in,height_in,gross_gal,water_gal,volume_method,regime
+display,Display tank,32.0,15.0,14.0,29.1,24.2,computed,Distilled top-off only. No water changes.
+staging,Staging / quarantine tank,17.0,6.6,9.5,4.6,4.0,computed,Distilled top-off only. No water changes.
