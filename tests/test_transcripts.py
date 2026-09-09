@@ -9,6 +9,7 @@ near-arbitrary runs. Both are cheap to test and expensive to find in the wild.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 
 import pytest
@@ -342,3 +343,72 @@ def test_the_live_job_can_write_to_the_repo():
     assert workflow["jobs"]["live"].get("permissions", {}).get("contents") == "write"
     # And the default for every other job stays read-only.
     assert workflow["permissions"]["contents"] == "read"
+
+
+def test_publishing_works_without_a_git_identity(tmp_path):
+    """A hosted runner has no ~/.gitconfig.
+
+    Regression: the orphan bootstrap committed before any identity was set, so
+    the first CI run died with `empty ident name`. It passed locally only
+    because this machine has a global git identity — the runner was the honest
+    environment. Reproduced here by blanking the global config.
+    """
+    remote = tmp_path / "remote.git"
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+
+    # A non-empty repo to clone for the orphan bootstrap.
+    seed = tmp_path / "seed"
+    subprocess.run(["git", "clone", "-q", str(remote), str(seed)], check=True)
+    (seed / "README.md").write_text("x", encoding="utf-8")
+    env_seed = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+        "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",
+    }
+    subprocess.run(["git", "-C", str(seed), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(seed), "commit", "-qm", "init"], check=True, env=env_seed)
+    subprocess.run(["git", "-C", str(seed), "push", "-q", "origin", "HEAD:master"], check=True)
+
+    run_dir = tmp_path / "run"
+    (run_dir / "cases").mkdir(parents=True)
+    (run_dir / "index.md").write_text("# run", encoding="utf-8")
+    (run_dir / "entries.json").write_text(
+        json.dumps({"meta": {"model": "m/x"}, "entries": []}), encoding="utf-8"
+    )
+
+    script = (tmp_path / "pub.sh")
+    script.write_text(
+        PUBLISH.read_text(encoding="utf-8").replace(
+            'https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git',
+            str(remote),
+        ),
+        encoding="utf-8",
+    )
+
+    # No global git identity, exactly like a runner.
+    env = {
+        k: v for k, v in os.environ.items()
+        if not k.startswith(("GIT_AUTHOR", "GIT_COMMITTER"))
+    }
+    env.update({
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "GIT_CONFIG_SYSTEM": os.devnull,
+        "GITHUB_REPOSITORY": "local/repo",
+        "GITHUB_TOKEN": "unused",
+        "RUNNER_TEMP": str(tmp_path),
+        "HOME": str(tmp_path / "nohome"),
+    })
+    result = subprocess.run(
+        ["bash", str(script), str(run_dir), "7", "success"],
+        capture_output=True, text=True, env=env, timeout=120,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "empty ident" not in (result.stdout + result.stderr)
+
+    listing = subprocess.run(
+        ["git", "-C", str(remote), "ls-tree", "-r", "--name-only", "eval-transcripts"],
+        capture_output=True, text=True, check=True,
+    ).stdout
+    # The label carries the model, slashes flattened.
+    assert "runs/" in listing and "__run-7__m-x/" in listing
+    assert "README.md" in listing

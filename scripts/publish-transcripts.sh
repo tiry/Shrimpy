@@ -27,6 +27,16 @@ set -euo pipefail
 BRANCH="${TRANSCRIPT_BRANCH:-eval-transcripts}"
 KEEP_DEFAULT=50
 
+# Set as environment rather than `git config`, because the orphan bootstrap
+# commits before any repo-local config could be written and a hosted runner has
+# no global identity. The first CI run failed exactly there — "empty ident name"
+# — while passing locally, because this machine has a ~/.gitconfig and the
+# runner does not.
+export GIT_AUTHOR_NAME="${GIT_AUTHOR_NAME:-github-actions[bot]}"
+export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-github-actions[bot]@users.noreply.github.com}"
+export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-$GIT_AUTHOR_NAME}"
+export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-$GIT_AUTHOR_EMAIL}"
+
 die() { echo "publish-transcripts: $*" >&2; exit 1; }
 
 # --------------------------------------------------------------------------- #
@@ -143,8 +153,6 @@ fi
 
 (
     cd "$workdir"
-    git config user.name "github-actions[bot]"
-    git config user.email "github-actions[bot]@users.noreply.github.com"
     git add -A
     if git diff --cached --quiet; then
         echo "nothing to publish"
