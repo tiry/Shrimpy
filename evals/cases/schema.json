@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tiry/Shrimpy/evals/cases/schema.json",
+  "title": "Shrimpy behavioural eval cases",
+  "description": "Bespoke. See evals/schema.py for why promptfoo was not adopted. Generated from CASE_FIELDS/EXPECT_FIELDS \u2014 edit those, not this file.",
+  "type": "object",
+  "required": [
+    "cases"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "prompt",
+          "why"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "a unique identifier"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "description": "what the user says"
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the rule in SOUL.md or SKILL.md this case defends \u2014 a case that traces back to nothing is testing the model, not the agent"
+          },
+          "expect": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "opens_skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "skills the model must have loaded with skill_view"
+              },
+              "matches_all": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "every regex must match the reply"
+              },
+              "matches_any": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "at least one regex must match"
+              },
+              "not_matches": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "none may match \u2014 always pair with a judge, see test_harness"
+              },
+              "max_chars": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "reply length ceiling"
+              },
+              "attempts_no_commands": {
+                "type": "boolean",
+                "description": "no shell command may be attempted at all"
+              },
+              "attempts_no_matching": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "no attempted command may match these"
+              },
+              "runs_aqua": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "CLI subcommands the agent must ALL have run"
+              },
+              "runs_any_aqua": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "at least one of these subcommands"
+              },
+              "runs_no_aqua": {
+                "type": "boolean",
+                "description": "the CLI must not be used"
+              }
+            }
+          },
+          "judge": {
+            "type": "string",
+            "description": "a rubric graded by a second model"
+          },
+          "toolsets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "override the default toolset for this case"
+          }
+        }
+      }
+    }
+  }
+}

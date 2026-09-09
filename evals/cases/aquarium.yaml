@@ -1,4 +1,11 @@
+# yaml-language-server: $schema=./schema.json
+#
 # Behavioural evals for the aquarium skill.
+#
+# The format is bespoke; `evals/schema.py` explains why promptfoo was not adopted
+# and validates every case before a model is called, because a misspelled
+# assertion is otherwise silently ignored and the case passes having asserted
+# nothing.
 #
 # Every case here corresponds to a rule Shrimpy is explicitly supposed to follow,
 # with a pointer to where that rule is written down. A case that does not trace

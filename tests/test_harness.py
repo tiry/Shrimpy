@@ -692,3 +692,102 @@ def test_a_substring_ban_is_never_the_sole_arbiter():
         f"{offenders} forbid a substring with no rubric behind it. A banned phrase "
         "is also how a correct reply names the thing it is rejecting."
     )
+
+
+# --------------------------------------------------------------------------- #
+# the case format
+# --------------------------------------------------------------------------- #
+
+def test_the_shipped_cases_validate():
+    from evals.runner import load_cases
+    from evals.schema import validate_cases
+
+    validate_cases(load_cases())
+
+
+@pytest.mark.parametrize(
+    ("bad", "expected"),
+    [
+        ({"expect": {"match_any": ["x"]}}, "matches_any"),
+        ({"expect": {"opens_skils": ["x"]}}, "opens_skills"),
+        ({"expect": {"runs_aqua_": ["x"]}}, "runs_aqua"),
+        ({"expct": {"matches_any": ["x"]}}, "expect"),
+    ],
+)
+def test_a_misspelled_assertion_is_rejected_with_a_suggestion(bad, expected):
+    """The bug this format's validation exists for.
+
+    Every assertion is read with `expect.get(...)`, so before validation a
+    misspelled key was silently ignored and the case passed having asserted
+    nothing. Verified directly: two impossible assertions produced zero failures.
+    A green eval is read as evidence, which makes a vacuous pass worse than a
+    crash.
+    """
+    from evals.schema import CaseError, validate_cases
+
+    case = {"id": "x", "prompt": "p", "why": "w", **bad}
+    with pytest.raises(CaseError) as excinfo:
+        validate_cases([case])
+    assert expected in str(excinfo.value), "the error should suggest the right key"
+
+
+def test_wrong_types_are_rejected():
+    from evals.schema import CaseError, validate_cases
+
+    for bad in (
+        {"expect": {"matches_any": "not a list"}},
+        {"expect": {"max_chars": "400"}},
+        {"expect": {"max_chars": True}},        # bool is an int subclass
+        {"expect": {"attempts_no_commands": "yes"}},
+        {"judge": ["not a string"]},
+    ):
+        with pytest.raises(CaseError):
+            validate_cases([{"id": "x", "prompt": "p", "why": "w", **bad}])
+
+
+def test_a_case_that_asserts_nothing_is_rejected():
+    from evals.schema import CaseError, validate_cases
+
+    with pytest.raises(CaseError, match="asserts nothing"):
+        validate_cases([{"id": "x", "prompt": "p", "why": "w"}])
+
+
+def test_a_case_without_a_why_is_rejected():
+    """A case that traces back to no stated rule is testing the model."""
+    from evals.schema import CaseError, validate_cases
+
+    with pytest.raises(CaseError, match="why"):
+        validate_cases([{"id": "x", "prompt": "p", "expect": {"max_chars": 10}}])
+
+
+def test_duplicate_case_ids_are_rejected():
+    from evals.schema import CaseError, validate_cases
+
+    case = {"id": "dup", "prompt": "p", "why": "w", "expect": {"max_chars": 10}}
+    with pytest.raises(CaseError, match="duplicate"):
+        validate_cases([case, dict(case)])
+
+
+def test_the_checked_in_schema_matches_the_definitions():
+    """`schema.json` is for editors; `schema.py` is what CI enforces. If they
+    drift, the editor stops agreeing with the build."""
+    import json
+
+    from evals.schema import json_schema
+
+    on_disk = json.loads(
+        (REPO_ROOT / "evals" / "cases" / "schema.json").read_text(encoding="utf-8")
+    )
+    assert on_disk == json_schema(), (
+        "regenerate with: python -c "
+        "'import json,evals.schema as s; "
+        "print(json.dumps(s.json_schema(), indent=2))' > evals/cases/schema.json"
+    )
+
+
+def test_the_yaml_points_at_its_schema():
+    """The editor directive that makes the schema do anything for an author."""
+    header = (REPO_ROOT / "evals" / "cases" / "aquarium.yaml").read_text(
+        encoding="utf-8"
+    )[:600]
+    assert "$schema" in header, "no yaml-language-server directive"

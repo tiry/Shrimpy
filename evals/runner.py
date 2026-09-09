@@ -30,6 +30,7 @@ from pathlib import Path
 
 import yaml
 
+from evals.schema import CaseError, validate_cases
 from harness import transcript
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -127,6 +128,10 @@ def load_cases(path: Path | None = None, only: list[str] | None = None) -> list[
         for case in data.get("cases", []):
             case["_file"] = file.name
             cases.append(case)
+    # Before anything is spent: a misspelled assertion is silently ignored, so a
+    # malformed case passes having asserted nothing.
+    validate_cases(cases)
+
     if only:
         wanted = set(only)
         cases = [c for c in cases if c.get("id") in wanted]
@@ -284,7 +289,14 @@ def main(args) -> int:
     from harness import agent as agent_mod
     from harness import home as home_mod
 
-    cases = load_cases(Path(args.file) if args.file else None, args.case)
+    try:
+        cases = load_cases(Path(args.file) if args.file else None, args.case)
+    except CaseError as exc:
+        # A malformed case file is an authoring mistake, not a crash. Exit 2
+        # (usage) rather than 1, which the live CI job reads as "the agent
+        # misbehaved".
+        print(f"\n{RED}{exc}{RESET}\n", file=sys.stderr)
+        return 2
     if not cases:
         print("no cases found", file=sys.stderr)
         return 2

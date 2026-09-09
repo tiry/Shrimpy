@@ -96,6 +96,12 @@ renders a transcript, so read it first.
 `"not found"`; `SKILL.md` §7 contains the phrase `command not found`, so a documentation
 edit broke eight of twelve evals. Parse the envelope, never the body.
 
+**The eval case format is bespoke, and validated because of it.** `evals/schema.py` says
+why promptfoo was not adopted and checks every case before a model is called — every
+assertion is read with `expect.get(...)`, so a misspelled key was silently ignored and the
+case passed having asserted nothing. `evals/cases/schema.json` is generated from the same
+definitions for editor autocomplete; a test fails if they drift.
+
 **Hook and middleware dispatch is fail-open.** An exception in a `pre_tool_call` hook is
 swallowed into a debug log. Anything registered there must record, never raise.
 
