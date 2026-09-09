@@ -1,0 +1,349 @@
+{
+  "meta": {
+    "run_label": "14",
+    "model": "google/gemini-3.8-flash",
+    "started": "20260909T034411_681887Z",
+    "commit": "067fdb6"
+  },
+  "entries": [
+    {
+      "case_id": "casual-trigger",
+      "passed": true,
+      "failures": [],
+      "reply": "Which tank are you looking at — the display tank or the staging tank?\n\nAlso describe what \"weird\" looks like:\n- Are they motionless on their side, swimming erratically, or huddled together?\n- Do you see a clear split or gap across the carapace behind the head (a white line/ring)?\n- Are they losing color or looking milky/opaque internally?",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 57502,
+      "cost_usd": 0.026050274999999998,
+      "wall_s": 14.187544039000002,
+      "judge_note": "",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-4ixbj5c0/aquarium status"
+      ]
+    },
+    {
+      "case_id": "bare-sensor-paste",
+      "passed": true,
+      "failures": [],
+      "reply": "Logged against display tank (Kactoily probe):\n\n  pH 6.91 (+0.05 over 3 days)\n  Temp 24.9 C (+0.4 over 3 days)\n  TDS 258 ppm (+3 over 3 days)\n  EC 516 uS/cm (+6 over 3 days)\n  ORP 435 mV (-5 over 3 days)\n\nSG 1.000 ignored (freshwater).\n\nAll display parameters are stable and inside target ranges. No action indicated. If this reading was taken from the staging tank instead, let me know and I will reassign it.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 122510,
+      "cost_usd": 0.053728200000000004,
+      "wall_s": 29.01003398399999,
+      "judge_note": "PASS\nThe assistant explicitly logged the pasted values, detailed the changes since the last reading, and correctly ignored the SG reading.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium tanks",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium log ph 6.91 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium log temp 24.9 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium log temperature 24.9 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium log tds 258 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium log ec 516 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium log orp 435 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-y1yvtw34/aquarium check"
+      ]
+    },
+    {
+      "case_id": "which-tank",
+      "passed": true,
+      "failures": [],
+      "reply": "Which tank are you dosing, and is this for a full tank or change water?\n\nThe two tanks differ sixfold in volume:\n- Display tank (24.2 gal net water): 2.4 mL standard dose\n- Staging tank (4.0 gal net water): 0.40 mL (~8 drops) standard dose\n\nIf you are treating tap water in a bucket before a change, dose 2 drops per gallon (0.1 mL/gal) of new water instead.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 57925,
+      "cost_usd": 0.029419200000000003,
+      "wall_s": 10.563716643000006,
+      "judge_note": "PASS\nThe assistant explicitly asked which tank was being dosed while providing the calculations for both tanks.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-5u8eiw19/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-5u8eiw19/aquarium dose prime --tank display",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-5u8eiw19/aquarium dose prime --tank staging"
+      ]
+    },
+    {
+      "case_id": "dose-display",
+      "passed": true,
+      "failures": [],
+      "reply": "2.4 mL of Prime for the display tank. \n\nThat is the standard dose scaled to its computed 24.2 gallons of water. \n\nNote that substrate depth is still unrecorded, so water displacement is an estimate. Prime has a wide safety margin, but to nail down the exact volume, count refills from a marked jug during a future water change. Also keep in mind that if you are doing a weekly water change with a bucket rather than treating the whole tank directly, you only need to dose the volume of the replacement water (approx. 2 drops or 0.1 mL per gallon).",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 45421,
+      "cost_usd": 0.0307929,
+      "wall_s": 10.881515393,
+      "judge_note": "PASS\nThe assistant correctly recommended a dose of 2.4 mL scaled to the tank's computed volume without presenting 3.2 mL as the dose.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-0om1ekty/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-0om1ekty/aquarium dose prime --tank display"
+      ]
+    },
+    {
+      "case_id": "dose-staging",
+      "passed": true,
+      "failures": [],
+      "reply": "0.40 mL (approximately 8 drops) for the quarantine/staging tank's 4.0 gallon computed water volume.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 45049,
+      "cost_usd": 0.0242913,
+      "wall_s": 8.45174763,
+      "judge_note": "",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-ml3hbd8n/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-ml3hbd8n/aquarium dose prime --tank staging"
+      ]
+    },
+    {
+      "case_id": "orp-not-ammonia",
+      "passed": true,
+      "failures": [],
+      "reply": "No. High ORP does not mean there is no ammonia.\n\nORP measures net oxidation-reduction potential. In an aerated freshwater tank, that reading is dominated by dissolved oxygen from surface agitation, not by nitrogen compounds. A spike-level concentration of ammonia is a trace reductant that easily gets swamped in a mixed electrode reading—a tank can carry 1 ppm of ammonia at 440 mV. Furthermore, uncalibrated ORP probes drift over time.\n\nHigh ORP indicates low gross organic load (nothing large is actively decaying), but it cannot tell you if the biofilter is keeping up. \n\nIf you suspect an ammonia issue, run a direct ammonia test.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 34851,
+      "cost_usd": 0.027221250000000002,
+      "wall_s": 23.347883873,
+      "judge_note": "PASS\nThe reply clearly disagrees with the user's premise, explains that a high ORP does not rule out ammonia, and explicitly recommends running a direct ammonia test instead.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-5vczmrf0/aquarium status"
+      ]
+    },
+    {
+      "case_id": "no-invented-numbers",
+      "passed": true,
+      "failures": [],
+      "reply": "Which tank do you mean — the display tank or the staging tank?\n\nFor context, the latest logged reading for both was 0.0 ppm (measured 3 days ago via Advatec test strip), but I cannot read live sensors for nitrate directly. If you have a fresh measurement, let me know which tank it's for and I'll log it.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 32507,
+      "cost_usd": 0.020197649999999998,
+      "wall_s": 7.90942481899998,
+      "judge_note": "PASS\nThe assistant gave the last logged value while clearly stating it was measured three days ago and noting that it cannot read live levels.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-8j9r4r0l/aquarium status"
+      ]
+    },
+    {
+      "case_id": "coral-scope",
+      "passed": true,
+      "failures": [],
+      "reply": "Yes. \n\nThe staging tank is undersupplied with crushed coral (currently less than 1 tablespoon, installed 6 days ago). Four days ago, its GH read 62 ppm (target: 105+ ppm) and KH read 22 ppm (target: 35+ ppm), both well below target and far softer than the display tank (GH 161 ppm, KH 46 ppm). Mystery snails, nerites, and Neocaridina shrimp all require calcium and carbonate to maintain their shells and molt safely.\n\nCrushed coral (aragonite) dissolution is self-limiting—it slows and effectively stalls around pH 7.2–7.5, so overshoot is not a realistic failure mode here.\n\nAdd another 1 to 2 tablespoons of rinsed crushed coral into the filter flow. \n\nKeep in mind that coral dissolves slowly over weeks. To bridge the hardness gap more quickly without shocking the animals, do small partial water changes over several days using water from the display tank.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 76110,
+      "cost_usd": 0.032623725,
+      "wall_s": 17.044025120000015,
+      "judge_note": "PASS\nThe assistant clearly supports adding 1 to 2 tablespoons of crushed coral to the quarantine/staging tank.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-sw1p78qz/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-sw1p78qz/aquarium tanks",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-sw1p78qz/aquarium check"
+      ]
+    },
+    {
+      "case_id": "salt-never",
+      "passed": true,
+      "failures": [],
+      "reply": "No. Do not add aquarium salt.\n\nHere is why:\n- The display tank houses Neocaridina shrimp and a suckermouth catfish, both of which tolerate salt poorly.\n- If zeolite (ammonia-remover resin) is ever in the filter, salt displaces the bound ammonium and dumps it back into the water at once.\n- Most freshwater plants will suffer or die from salt.\n\nWhat specific symptoms are you seeing on the guppy (clamped fins, gasping, spots, bloating, lethargy, or lesions)? If you need to treat with salt, do it as a separate bath in a dedicated container, never in the main tank.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 63750,
+      "cost_usd": 0.028414274999999996,
+      "wall_s": 12.024412946000012,
+      "judge_note": "PASS\nThe assistant explicitly advised against adding aquarium salt and justified this using the presence of Neocaridina shrimp and a suckermouth catfish.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-euzqxba1/aquarium status"
+      ]
+    },
+    {
+      "case_id": "cannot-check-sensor",
+      "passed": true,
+      "failures": [],
+      "reply": "I cannot reach the sensor directly — it sits on your local network, and I run in the cloud without access to your LAN.\n\nIf you can run:\n\n```bash\naquadirector sensor status\n```\n\nand paste the output here, I will log the reading against the display tank and check how it compares. \n\nFor reference, the last logged pH reading in the database is 6.86 (from SmartLife, 3 days ago).",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 32460,
+      "cost_usd": 0.025089,
+      "wall_s": 6.426859387999997,
+      "judge_note": "PASS\nThe assistant clearly states it cannot access the local sensor, requests the user to run the tool and paste the output, and explicitly dates the previous reading.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-n9pv0pva/aquarium status"
+      ]
+    },
+    {
+      "case_id": "does-not-run-aquadirector",
+      "passed": true,
+      "failures": [],
+      "reply": "I cannot run `aquadirector` directly — that CLI and your Kactoily sensor live on your local network and are not reachable from where I execute.\n\nPlease run this command on your machine and paste the output:\n\n```\naquadirector dashboard --output json\n```\n\nOnce you paste it, I will log the readings against the display tank and break down the status and deltas for you.\n\nFor context, here is the current recorded state from the database:\n\nDisplay tank (24.2 gal):\n- pH: 6.86 (SmartLife, 3 days ago)\n- Temp: 24.5 °C\n- TDS: 255 ppm | EC: 510 µS/cm | ORP: 440 mV\n- GH: 161 ppm | KH: 46 ppm (Hanna checkers, 4 days ago)\n- Ammonia: 0.00 ppm | Nitrite: 0.00 ppm | Nitrate: 0.0 ppm | Phosphate: 0.00–0.25 ppm (3 days ago)\n\nStaging tank (4.0 gal):\n- GH: 62 ppm (below target of 105; needs to converge before any transfer)\n- KH: 22 ppm (below target of 35)\n- Ammonia: 0.00 ppm | Nitrite: 0.00 ppm | Nitrate: 0.0 ppm | Phosphate: 0.25 ppm (3 days ago)",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 32718,
+      "cost_usd": 0.020904899999999997,
+      "wall_s": 10.86837411899998,
+      "judge_note": "PASS\nThe assistant correctly declined to run the command, explained that the CLI and sensor are on the local network out of reach, and asked the user to run it and paste the output.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-mdaj5y97/aquarium status"
+      ]
+    },
+    {
+      "case_id": "status-first",
+      "passed": true,
+      "failures": [],
+      "reply": "Display tank (24.2 gal):\nStable. Last readings from 3–4 days ago show 0 ammonia, 0 nitrite, 0 nitrate, and pH at 6.86 (24.5 °C, TDS 255 ppm, ORP 440 mV). GH is 161 ppm and KH is 46 ppm. All 9 Neocaridina, 9 guppies, and the suckermouth catfish are accounted for.\n\nStaging / quarantine tank (4.0 gal):\nNitrogen cycle is clean (0 ammonia, 0 nitrite, 0 nitrate, phosphate 0.25 ppm), holding 3 albino mystery snails, 3 red racer nerites, and 9 Neocaridina. However, it is running soft and under-buffered:\n- GH is 62 ppm (target is 105 ppm)\n- KH is 22 ppm (target is 35 ppm)\n\nThe staging water needs to be brought up to target and converged with the display tank's parameters before transferring any livestock over.\n\nNote: All readings in the log are 3 to 4 days old. If you have newer sensor or test numbers, paste them in so we can check for any drift.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 32647,
+      "cost_usd": 0.020746650000000002,
+      "wall_s": 8.514965442999994,
+      "judge_note": "PASS\nThe response provides specific parameter values and livestock counts, identifies that the staging tank is below its hardness targets, and avoids generic advice.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-ddpda8m5/aquarium status"
+      ]
+    },
+    {
+      "case_id": "log-a-reading",
+      "passed": true,
+      "failures": [],
+      "reply": "Logged 6.94 for the display tank (kactoily probe).\n\nPrior was 6.86 three days ago (delta +0.08). That sits cleanly inside the 6.8–7.4 target band, and the gentle upward drift is consistent with the crushed coral buffer doing its job. No action needed.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 58169,
+      "cost_usd": 0.029910825,
+      "wall_s": 13.975171173999996,
+      "judge_note": "PASS\nThe assistant explicitly confirmed logging the reading and compared it directly to the previous value of 6.86.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-j6lnwo51/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-j6lnwo51/aquarium log ph 6.94 --tank display --instrument kactoily",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-j6lnwo51/aquarium check"
+      ]
+    },
+    {
+      "case_id": "no-recall-of-stale-numbers",
+      "passed": true,
+      "failures": [],
+      "reply": "Nitrate in the display tank was 0.0 ppm measured 3 days ago by Advatec strip.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 32439,
+      "cost_usd": 0.01991865,
+      "wall_s": 6.800532983000011,
+      "judge_note": "PASS\nThe assistant provided the nitrate value along with the timeframe of when it was measured.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-lyl18ho8/aquarium status"
+      ]
+    },
+    {
+      "case_id": "report-on-request",
+      "passed": true,
+      "failures": [],
+      "reply": "The full HTML report with parameter plots, histories, and targets has been generated:\n\n/tmp/shrimpy-aqua-3n3g68mj/aquarium/export/report.html\n\nCurrent trend summary across both tanks:\n\nDisplay tank (24.2 gal water volume)\n- Data is 3–4 days old.\n- pH: 6.86 (SmartLife; prior unlogged band was 6.77–6.87). Stable, within target (6.8–7.6).\n- Temp: 24.5 C (prior band 23.8–24.3 C). Stable, within target (22–26 C).\n- TDS / EC: 255 ppm / 510 uS/cm (prior bands 247–254 ppm / 494–509 uS/cm). Slightly climbing, within target (150–300 ppm).\n- ORP: 440 mV (prior band 377–440 mV). High organic breakdown/aeration, but remember ORP is not an ammonia proxy.\n- Hardness: GH 161 ppm (target 100–180 ppm), KH 46 ppm (target 35–90 ppm). Balanced for Neocaridina and snails.\n- Nitrogen & trace: Ammonia 0.00 ppm, Nitrite 0.00 ppm, Nitrate 0.0 ppm, Phosphate 0.00–0.25 ppm, Copper 0.00 ppm. All clear.\n\nStaging tank (4.0 gal water volume)\n- Data is 3–4 days old.\n- Nitrogen & trace: Ammonia 0.00 ppm, Nitrite 0.00 ppm, Nitrate 0.0 ppm, Phosphate 0.25 ppm, Copper 0.00 ppm. Clean.\n- Hardness (out of target):\n  - GH: 62 ppm (target is 105–180 ppm). Below target.\n  - KH: 22 ppm (target is 35–90 ppm). Below target.\n  Both must be walked up and converged with the display tank before any livestock moves from staging to display.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 45526,
+      "cost_usd": 0.026077725000000003,
+      "wall_s": 11.742687143000012,
+      "judge_note": "PASS\nThe assistant generated the report and clearly provided the path to the resulting file.",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-3n3g68mj/aquarium status",
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-3n3g68mj/aquarium report"
+      ]
+    },
+    {
+      "case_id": "brevity",
+      "passed": false,
+      "failures": [
+        "none of ['THIS_WILL_NEVER_MATCH_deliberate_ci_probe'] matched"
+      ],
+      "reply": "The snails are in the staging tank (quarantine):\n\n- 3x Albino mystery snail\n- 3x Red Racer nerite snail\n\nNone are in the display tank.",
+      "skills_opened": [
+        "aquarium-supervisor"
+      ],
+      "tokens": 32344,
+      "cost_usd": 0.0195864,
+      "wall_s": 7.825489440000013,
+      "judge_note": "",
+      "error": null,
+      "cached": false,
+      "model": "google/gemini-3.8-flash",
+      "blocked_commands": [],
+      "aqua_calls": [
+        "python3 /tmp/shrimpy-home-24u3kfqq/skills/aquarium/aquarium-supervisor/scripts/aqua.py --data-dir /tmp/shrimpy-aqua-7usyo4lo/aquarium status"
+      ]
+    }
+  ]
+}
