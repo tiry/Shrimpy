@@ -302,3 +302,63 @@ reading. `references/chemistry.md` for the mechanisms behind the numbers.
 `references/products.md` for why a product is or is not usable here.
 
 Read them for *reasoning*. Read `aqua` for *values*.
+
+---
+
+## Background — `assets/wiki/`
+
+Three tiers, and they do not overlap:
+
+| Read | For | Example |
+|---|---|---|
+| `aqua` | **values** | what this tank reads, what this species tolerates |
+| `references/` | **reasoning** | why a number matters, what to do about it |
+| `assets/wiki/` | **background** | what the animal *is*, how a product works, how an instrument fails |
+
+Open a wiki page with `skill_view(file_path="assets/wiki/<category>/<slug>.md")`. The pages
+state no measurement and no tolerance range — those are `aqua`'s. Each cites its sources.
+
+**Read the page when being wrong is expensive**, not for every background question. The
+rule above still holds — ordinary husbandry you are confident about is answered from
+ordinary knowledge, and a lookup for its own sake is a wasted round trip. Open the page
+when the answer turns on something specific to *these* animals and products:
+
+- a treatment that conflicts with the rest of the stocking (the planaria/snail case)
+- what a product actually does here, as opposed to what the label claims
+- why two instruments disagree
+- a pest or disease that has to be told apart from a similar one
+
+In those, a plausible recollection and a sourced fact read identically in a reply, and only
+one of them is checkable.
+
+**Do not read a wiki page to answer a question about a number.** `aqua` is faster and it is
+the only copy that is current.
+
+<!-- WIKI-INDEX START -->
+
+| Subject | Page |
+|---|---|
+| **The animals** | |
+| Neocaridina davidi, cherry shrimp, Neocaridina, shrimp | `assets/wiki/species/neocaridina.md` |
+| Otocinclus, oto, otos, otocinclus, dwarf suckermouth | `assets/wiki/species/otocinclus.md` |
+| Poecilia reticulata, guppy, guppies, fancy guppy, millionfish | `assets/wiki/species/guppy.md` |
+| Pomacea diffusa, mystery snail, apple snail, spike-topped apple snail, snail | `assets/wiki/species/mystery_snail.md` |
+| Vittina waigiensis, nerite, red racer nerite, nerite snail, snail | `assets/wiki/species/nerite.md` |
+| **Pests, disease and algae** | |
+| Cyanobacteria, cyanobacteria, blue-green algae, BGA, slime algae | `assets/wiki/pest/cyanobacteria.md` |
+| Hydra, hydra, polyp, stinging polyp | `assets/wiki/pest/hydra.md` |
+| Ichthyophthirius multifiliis, ich, ick, white spot, white spot disease | `assets/wiki/pest/ich.md` |
+| Planaria, planaria, flatworm, flatworms | `assets/wiki/pest/planaria.md` |
+| Scutariella japonica, scutariella, white worms on shrimp, nose worms, rostrum worms | `assets/wiki/pest/scutariella.md` |
+| **What is in the bottle** | |
+| API Melafix, Melafix, tea tree, melaleuca, bacterial remedy | `assets/wiki/product/melafix.md` |
+| Seachem Prime, Prime, dechlorinator, conditioner, water conditioner | `assets/wiki/product/prime.md` |
+| Seachem Stability, Stability, bacteria starter, cycling bacteria, bottled bacteria | `assets/wiki/product/stability.md` |
+| **How an instrument measures** | |
+| Colorimetric checkers, checker, colorimeter, Hanna checker | `assets/wiki/method/colorimetric-checker.md` |
+| Electrode pens and multiparameter probes, probe, pen, pH meter, TDS meter, ORP | `assets/wiki/method/electrode-pen.md` |
+| Liquid reagent test kits, liquid kit, drop test, titration | `assets/wiki/method/liquid-reagent-kit.md` |
+| Multi-parameter test strips, strips, dip strip, 9-in-1 | `assets/wiki/method/test-strip.md` |
+| Observed and reported values, observed, reported, from memory | `assets/wiki/method/observation.md` |
+
+<!-- WIKI-INDEX END -->

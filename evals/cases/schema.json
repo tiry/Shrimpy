@@ -47,6 +47,13 @@
                 },
                 "description": "skills the model must have loaded with skill_view"
               },
+              "opens_wiki": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "background pages the model must have read, e.g. pest/planaria.md"
+              },
               "matches_all": {
                 "type": "array",
                 "items": {

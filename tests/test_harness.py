@@ -836,3 +836,69 @@ def test_reporting_only_modules_do_not_invalidate_the_cache():
             )
         finally:
             path.write_bytes(original)
+
+
+# --------------------------------------------------------------------------- #
+# the judge sees the reply, and nothing else
+# --------------------------------------------------------------------------- #
+
+# Phrases that ask the judge to rule on whether the AGENT called a tool. It cannot:
+# the rubric is graded against the final reply text, with no transcript attached.
+PROVENANCE_PHRASES = (
+    "obtained from",
+    "rather than asserted",
+    "did not look up",
+    "just looked up",
+    "without running",
+    "actually running the tool",
+    "actually generate",
+    "using the tool",
+    "did not call",
+    "actually ran",
+)
+
+
+def test_a_rubric_never_re_judges_what_the_harness_already_proves():
+    """The sixth time the harness was wrong and the agent was right.
+
+    `background-not-numbers` asserted `runs_aqua: [species]` — which passed, the
+    transcript shows `aqua.py species otocinclus` — and then asked the judge for
+    a range "obtained from the aquarium CLI rather than asserted". The judge sees
+    only the reply. The reply was a single correct sentence with no narration, so
+    the judge had nothing suggesting a lookup, guessed, and vetoed a check that
+    had already succeeded on real evidence.
+
+    That is the whole failure class: a rubric duplicating a deterministic
+    assertion can only ever subtract, because the judge is guessing where the
+    harness knows. Provenance belongs to `runs_aqua`, `opens_skills` and
+    `attempts_no_matching`; the rubric judges the text.
+    """
+    from evals.runner import load_cases
+
+    offenders = []
+    for case in load_cases():
+        rubric = (case.get("judge") or "").lower()
+        # A rubric may quote the assertion to explain itself — what it must not do
+        # is ask the judge to rule on it. Saying so explicitly is the exemption.
+        if "judge only the text" in rubric:
+            continue
+        hits = [phrase for phrase in PROVENANCE_PHRASES if phrase in rubric]
+        if hits:
+            offenders.append(f"{case['id']}: {hits}")
+
+    assert not offenders, (
+        "these rubrics ask the judge to rule on whether a tool was called, which "
+        "it cannot see:\n\n  " + "\n  ".join(offenders)
+        + "\n\nUse runs_aqua / opens_skills / attempts_no_matching for tool use, and "
+        "keep the rubric to what is in the reply. If the rubric must mention the "
+        'assertion for context, add the words "judge only the text".'
+    )
+
+
+def test_the_provenance_guard_catches_the_real_regression():
+    """The exact rubric that failed a correct answer."""
+    rubric = (
+        "The reply must give the Otocinclus temperature range of roughly 20 to 28 C, "
+        "obtained from the aquarium CLI rather than asserted."
+    ).lower()
+    assert [p for p in PROVENANCE_PHRASES if p in rubric], "the guard would not fire"

@@ -207,8 +207,9 @@ cases:
       The reply must decline to run the command, say that it is out of reach
       because it lives on the user's local network or machine, and ask the user
       to run it and paste the output. Mentioning aquadirector alone is enough -
-      it does not also have to name the sensor. Actually running the tool is a
-      FAIL, and inventing dashboard output is a severe FAIL.
+      it does not also have to name the sensor. Inventing dashboard output is a
+      severe FAIL. Judge only the text - whether the command was attempted is
+      proved by `attempts_no_matching`, which the judge cannot see.
 
   # --- live data -----------------------------------------------------------
   # Spec 06 moved every fact out of the prose and into a CLI. These cases test
@@ -226,8 +227,8 @@ cases:
       opens_skills: [aquarium-supervisor]
       runs_aqua: [status]
     judge: >
-      The reply must be grounded in data the assistant just looked up, naming
-      specific current values, and must not be a generic aquarium-keeping answer.
+      The reply must name specific current values rather than generalities, and
+      must not be a generic aquarium-keeping answer.
       Reporting that the staging tank is below its hardness target is expected.
 
   - id: log-a-reading
@@ -270,9 +271,10 @@ cases:
       opens_skills: [aquarium-supervisor]
       runs_aqua: [report]
     judge: >
-      The reply must actually generate a report or export using the tool and tell
-      the user where the file is. Describing how they could make one themselves,
-      or listing the numbers instead, is a FAIL.
+      The reply must tell the user where the generated file is - a path.
+      Describing how they could make one themselves, or listing the numbers
+      instead of producing a file, is a FAIL. Judge only the text; that the
+      report command ran is proved by `runs_aqua`.
 
   # --- species reference ---------------------------------------------------
   # The reference tier: what an animal needs, as opposed to what these tanks
@@ -292,7 +294,7 @@ cases:
       matches_all: ["6\\.5", "7\\.8"]
     judge: >
       The reply must give the Neocaridina pH tolerance range of roughly 6.5 to
-      7.8. Stating a range it did not look up, or confusing the species range
+      7.8. A wrong range, or confusing the species range
       with one tank's configured target, is a FAIL. Mentioning what the tanks
       currently read as additional context is good, not a failure.
 
@@ -372,3 +374,82 @@ cases:
     expect:
       matches_any: ["staging|quarantine|4[ -]?gal"]
       max_chars: 400
+
+  # --- background wiki (spec 09) -------------------------------------------
+
+  - id: background-molts
+    why: >
+      The first test that the wiki is reachable at all. "Should I take the shed
+      shells out" is answerable only from natural history - it is in no tolerance
+      band, no reading and no reference file. Before spec 09 the model had to
+      invent it. The right answer is to leave them, because the shrimp eat them
+      back for the minerals.
+    prompt: "I keep finding empty translucent shrimp shells on the substrate. Should I be scooping them out?"
+    expect:
+      opens_skills: [aquarium-supervisor]
+      matches_any: ["leave", "leaving", "don't remove", "do not remove", "eat them", "consume"]
+    judge: >
+      The reply must say the shed exoskeletons should be LEFT in the tank, and
+      should give the reason: the shrimp consume them to recover minerals. Credit
+      for distinguishing a molt from a dead shrimp (a molt is clear and hollow, a
+      dead shrimp goes opaque pink). Telling Tiry to remove them is a FAIL.
+      Treating the shells as evidence of deaths without noting they are molts is
+      a FAIL.
+
+  - id: background-not-numbers
+    why: >
+      The failure mode spec 09 creates. A wiki page about a species sitting next
+      to a CLI that owns its tolerance ranges is exactly the duplication that
+      broke the GH answer once already, and the guard against restating a range
+      in prose is only half the fix - the model must also still REACH for the
+      CLI. This asks a numeric question about a species that has a background
+      page, and the number must come from `aqua species`.
+    prompt: "What temperature range do the otos want?"
+    expect:
+      runs_aqua: [species]
+      matches_all: ["20", "28"]
+    judge: >
+      The reply must give the Otocinclus temperature range of roughly 20 to 28 C.
+      A different range, or one belonging to another species, is a FAIL. Naming
+      the optimal band inside it is good.
+      Judge ONLY the text. Whether the CLI was run is proved by `runs_aqua`, and
+      the judge cannot see tool calls - a terse but correct reply must pass.
+
+  - id: treatment-conflict
+    why: >
+      The highest-value thing the wiki knows, and a genuine safety case. Every
+      shrimp-safe planaria treatment - fenbendazole, areca nut - is deliberately
+      lethal to snails, and these tanks hold mystery snails and nerites. A reply
+      that recommends the standard treatment without naming that conflict would
+      cost Tiry the snails. Nothing in the CLI or the references carries this;
+      it is background or it is nowhere.
+    prompt: "I'm pretty sure I've got planaria on the front glass. What do I dose to get rid of them?"
+    expect:
+      opens_skills: [aquarium-supervisor]
+      opens_wiki: [pest/planaria.md]
+      matches_any: ["snail", "snails"]
+    judge: >
+      The reply MUST warn that the usual planaria treatments (fenbendazole,
+      Panacur, areca/betel nut "No Planaria" products) are hostile to snails, and
+      that this system keeps snails. Failing to raise the conflict at all is a
+      FAIL even if the treatment named is otherwise correct. Recommending cutting
+      back feeding and manual removal first is good. Giving a specific dose is a
+      FAIL - no dosing for this exists in the CLI.
+
+  - id: background-recruitment
+    why: >
+      Tests that background changes a diagnosis rather than merely decorating it.
+      "Adults fine, no juveniles" has several causes the wiki knows and the
+      readings cannot show - planaria and hydra predation on shrimplets, and fish
+      eating them. A reply that only reaches for water chemistry has missed what
+      the skill now knows.
+    prompt: "My shrimp all look healthy but I haven't seen a single baby in weeks. The water tests fine."
+    expect:
+      opens_skills: [aquarium-supervisor]
+      matches_any: ["planaria", "hydra", "guppy", "guppies", "fish", "predat"]
+    judge: >
+      The reply must offer at least one predation or survival explanation for
+      missing juveniles while the adults are healthy - planaria, hydra, or fish
+      eating shrimplets - rather than treating it purely as a water-chemistry
+      question. Asking what else is in the tank is good. Confidently asserting a
+      cause without checking the roster is a FAIL.

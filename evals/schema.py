@@ -62,6 +62,8 @@ REQUIRED_CASE_FIELDS = ("id", "prompt", "why")
 EXPECT_FIELDS: dict[str, tuple[type | tuple, dict, str]] = {
     "opens_skills": (list, {"type": "array", "items": {"type": "string"}},
                      "skills the model must have loaded with skill_view"),
+    "opens_wiki": (list, {"type": "array", "items": {"type": "string"}},
+                   "background pages the model must have read, e.g. pest/planaria.md"),
     "matches_all": (list, {"type": "array", "items": {"type": "string"}},
                     "every regex must match the reply"),
     "matches_any": (list, {"type": "array", "items": {"type": "string"}},

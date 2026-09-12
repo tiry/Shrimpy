@@ -27,7 +27,17 @@ import pytest
 from conftest import REPO_ROOT, body
 
 SKILL_DIR = REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor"
-PROSE_FILES = [SKILL_DIR / "SKILL.md", *sorted((SKILL_DIR / "references").glob("*.md"))]
+WIKI_DIR = SKILL_DIR / "assets" / "wiki"
+
+# The wiki is prose, so it is scanned exactly like the rest of the prose. Spec 09 adds a
+# third tier of markdown to a skill whose whole discipline is that prose cannot hold a
+# fact; leaving it unscanned would re-open the hole from the other side, twenty pages at
+# a time.
+PROSE_FILES = [
+    SKILL_DIR / "SKILL.md",
+    *sorted((SKILL_DIR / "references").glob("*.md")),
+    *sorted(WIKI_DIR.rglob("*.md")),
+]
 
 # A number with a unit. Harmless on its own; the attribution is what matters.
 VALUE = (
@@ -192,10 +202,14 @@ SPECIES_RANGE_RE = re.compile(
 # water chemistry, not animals — "distilled water reads pH 5.5-5.8 in the jug"
 # and "aragonite dissolution stalls around 7.2-7.5" are mechanisms, and a
 # repo-wide scan flags both.
-SPECIES_FILE = SKILL_DIR / "references" / "livestock.md"
+SPECIES_FILES = [
+    SKILL_DIR / "references" / "livestock.md",
+    *sorted((WIKI_DIR / "species").glob("*.md")),
+]
 
 
-def test_species_ranges_are_not_restated_in_prose():
+@pytest.mark.parametrize("SPECIES_FILE", SPECIES_FILES, ids=lambda p: p.name)
+def test_species_ranges_are_not_restated_in_prose(SPECIES_FILE):
     """`reference.json` is the single source for what a species tolerates.
 
     Regression: the Neocaridina ranges were in `reference.json` *and* spelled out
@@ -218,7 +232,7 @@ def test_species_ranges_are_not_restated_in_prose():
             continue
         match = SPECIES_RANGE_RE.search(line)
         if match:
-            findings.append(f"livestock.md:{number}: {match.group(0)!r}\n    {stripped[:100]}")
+            findings.append(f"{SPECIES_FILE.name}:{number}: {match.group(0)!r}\n    {stripped[:100]}")
     assert not findings, (
         "a tolerance range is restated in prose; `aqua species` owns these:\n\n"
         + "\n".join(findings)

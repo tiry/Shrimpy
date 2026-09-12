@@ -154,6 +154,13 @@ def check(case: dict, result) -> list[str]:
                 f"(opened: {result.skills_opened or 'nothing'})"
             )
 
+    for page in expect.get("opens_wiki") or []:
+        if page not in (getattr(result, "wiki_opened", None) or []):
+            opened = ", ".join(getattr(result, "wiki_opened", None) or []) or "none"
+            failures.append(
+                f"did not read the background page {page} (read: {opened})"
+            )
+
     for pattern in expect.get("matches_all") or []:
         if not re.search(pattern, reply, re.IGNORECASE):
             failures.append(f"missing required /{pattern}/")

@@ -34,6 +34,18 @@ SCHEMA_VERSION = 1
 SKILL_DIR = Path(__file__).resolve().parent.parent
 ASSETS_DIR = SKILL_DIR / "assets"
 REFERENCE_FILE = ASSETS_DIR / "reference.json"
+WIKI_DIR = ASSETS_DIR / "wiki"
+
+
+def wiki_page(category: str, slug: str) -> str | None:
+    """The skill-relative path to a background page, or None if there isn't one.
+
+    Derived from the filesystem rather than recorded in reference.json: a second copy of
+    a path is a second thing to keep in step, and spec 09 exists because a second copy of
+    anything in this skill eventually disagrees with the first.
+    """
+    page = WIKI_DIR / category / f"{slug}.md"
+    return str(page.relative_to(SKILL_DIR)) if page.is_file() else None
 INITIAL_DIR = ASSETS_DIR / "initial"
 
 JSON_FILES = ("tanks.json", "livestock.json", "inventory.json", "questions.json")

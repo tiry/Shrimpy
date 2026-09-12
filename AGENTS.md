@@ -84,11 +84,26 @@ identity (`agent/system_prompt.py:472-487`). Never use them in the harness.
 **`HERMES_HOME` must be set before `import run_agent`** — that module binds it at import
 time (`run_agent.py:127-129`).
 
-**When an eval fails, read the reply before touching the skill.** **Four times** now the
+**A rubric must not re-judge what a deterministic assertion already proves.** The judge is
+shown the reply and nothing else — it cannot see tool calls. A rubric asking for a value
+"obtained from the CLI rather than asserted" made the judge guess, and it vetoed a
+`runs_aqua` check that had already passed on the transcript. Provenance belongs to
+`runs_aqua`/`opens_skills`/`opens_wiki`; the rubric judges the text.
+`tests/test_harness.py` fails on the phrasings that ask otherwise.
+
+**The wiki is for when being wrong is expensive, not for every background question.**
+`SKILL.md:34-36` tells the agent to answer general husbandry from ordinary knowledge, so an
+`opens_wiki` assertion on "should I remove shed molts" failed a correct reply for obeying
+the older rule. Scope a lookup requirement to what is specific to these animals and
+products — the planaria/snail treatment conflict is the paradigm case.
+
+**When an eval fails, read the reply before touching the skill.** **Seven times** now the
 harness was wrong and the agent was right — it named `3.2 mL` *in order to correct it*,
 scoped a caution with a sentence containing "do not add", chose a more targeted CLI verb
-than the one asserted, and said "don't dose chemical pH adjusters" against a case that
-banned the phrase. A substring test cannot tell "recommends X" from "warns against X".
+than the one asserted, said "don't dose chemical pH adjusters" against a case that banned
+the phrase, gave a correct range that a rubric called unsourced because the judge cannot see
+a tool call, and answered a husbandry question from ordinary knowledge exactly as SKILL.md
+instructs. A substring test cannot tell "recommends X" from "warns against X".
 `tests/test_harness.py` now refuses a `not_matches` with no rubric behind it; every run
 renders a transcript, so read it first.
 

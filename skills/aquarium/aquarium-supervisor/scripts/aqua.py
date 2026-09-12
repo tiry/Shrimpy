@@ -234,6 +234,10 @@ def cmd_species(st: Store, args) -> int:
             out(f"   {'volume':<12} {low}-{high} gal per adult")
         for note in spec.get("notes") or []:
             out(f"   - {note}")
+        page = store.wiki_page("species", key)
+        if page:
+            payload.setdefault("_background", {})[key] = page
+            out(f"   {'background':<12} {page} — natural history, diet, molting, breeding")
         out()
 
     if not args.name:

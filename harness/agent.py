@@ -164,6 +164,7 @@ class RunResult:
     prompt: str
     final: str
     skills_opened: list[str] = field(default_factory=list)
+    wiki_opened: list[str] = field(default_factory=list)
     tool_calls: list[str] = field(default_factory=list)
     blocked_commands: list[str] = field(default_factory=list)
     aqua_calls: list[str] = field(default_factory=list)
@@ -187,6 +188,7 @@ class RunResult:
             "prompt": self.prompt,
             "final": self.final,
             "skills_opened": self.skills_opened,
+            "wiki_opened": self.wiki_opened,
             "tool_calls": self.tool_calls,
             "blocked_commands": self.blocked_commands,
             "aqua_calls": self.aqua_calls,
@@ -290,6 +292,41 @@ def _skills_opened(functions: list[dict], results: dict[str, str]) -> list[str]:
             continue
         names.append(name)
     return names
+
+
+def _wiki_opened(functions: list[dict], results: dict[str, str]) -> list[str]:
+    """Which background pages the model actually read.
+
+    Same recovery problem as `_skills_opened`, one level down: a supporting file
+    is read by calling `skill_view` a second time with `file_path=`
+    (tools/skills_tool.py:2008-2017), so the only record is the tool call.
+
+    Worth its own field because a background eval can pass without it. The
+    `background-molts` case asked whether to remove shed shrimp shells, got the
+    right answer, and never opened a page — the model knew it already. That case
+    proved the model's training, not the wiki, and would have passed with the
+    whole directory deleted.
+
+    Paths are returned relative to the wiki root, so a case asserts
+    `species/neocaridina.md` rather than the full skill-relative path.
+    """
+    pages: list[str] = []
+    for fn in functions:
+        if fn.get("name") != "skill_view":
+            continue
+        try:
+            args = json.loads(fn.get("arguments") or "{}")
+        except (ValueError, TypeError):
+            continue
+        path = args.get("file_path") or ""
+        if not path.startswith("assets/wiki/"):
+            continue
+        if _tool_failed(results.get(fn.get("_id") or "", "")):
+            continue
+        page = path[len("assets/wiki/"):]
+        if page not in pages:
+            pages.append(page)
+    return pages
 
 
 def prepare(
@@ -444,6 +481,7 @@ def run(
             prompt=prompt,
             final=raw.get("final_response") or "",
             skills_opened=_skills_opened(functions, results),
+            wiki_opened=_wiki_opened(functions, results),
             tool_calls=[fn.get("name", "?") for fn in functions],
             blocked_commands=interceptor.commands if interceptor else [],
             aqua_calls=interceptor.aqua_calls if interceptor else [],
