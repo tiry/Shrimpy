@@ -109,3 +109,64 @@ def test_no_live_data_inside_the_skill():
         f"live-data-shaped directory inside skills/: {[str(p) for p in skill_data]}. "
         "Live data belongs in $HERMES_HOME/workspace/aquarium/."
     )
+
+
+def test_the_integration_note_exists_and_is_linked():
+    """The deployment contract must be findable from the docs an integrator reads."""
+    note = REPO_ROOT / "INTEGRATION.md"
+    assert note.is_file(), "INTEGRATION.md is the contract for consuming this repo"
+    for doc in ("README.md", "AGENTS.md"):
+        assert "INTEGRATION.md" in (REPO_ROOT / doc).read_text(encoding="utf-8"), (
+            f"{doc} does not link the integration note"
+        )
+
+
+def test_the_integration_note_names_the_data_that_has_one_copy():
+    """The note's reason to exist. If this sentence goes, so does the warning that
+    the aquarium data is not in git and not backed up by default."""
+    text = (REPO_ROOT / "INTEGRATION.md").read_text(encoding="utf-8")
+    assert "workspace/aquarium" in text, "the note must name the live data path"
+    assert "only copy" in text, "the note must say the volume is the only copy"
+
+
+def test_every_citation_in_the_note_is_checked_by_the_verifier():
+    """A citation the script does not probe rots silently — which is exactly how
+    docs/storage.md:85-93 came to point at an unrelated section."""
+    import re
+
+    note = (REPO_ROOT / "INTEGRATION.md").read_text(encoding="utf-8")
+    script = (REPO_ROOT / "scripts" / "check-integration-note.sh").read_text(
+        encoding="utf-8"
+    )
+    # `file.ext:123` or `file.ext:123-456`, as used in the note's prose and tables.
+    cited = {
+        m.group(1)
+        for m in re.finditer(r"`?([\w./-]+\.(?:sh|py|md|yml)):(\d+(?:-\d+)?)`?", note)
+    }
+    # Only files in the other repo need the verifier; this repo's own paths are
+    # covered by the rest of the suite.
+    foreign = {
+        path
+        for path in cited
+        if not (REPO_ROOT / path).exists() and "INTEGRATION.md" not in path
+    }
+    unprobed = {path for path in foreign if path.split("/")[-1] not in script}
+    assert not unprobed, (
+        f"cited in INTEGRATION.md but never verified by "
+        f"scripts/check-integration-note.sh: {sorted(unprobed)}"
+    )
+
+
+def test_the_verifier_skips_without_a_tairy_agent_checkout():
+    """CI has only this repo. The check must not fail there."""
+    import subprocess
+
+    result = subprocess.run(
+        [str(REPO_ROOT / "scripts" / "check-integration-note.sh"), "/nonexistent"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, "the verifier must skip, not fail, without the repo"
+    assert "skip" in result.stdout.lower()
+    assert "NOT verified" in result.stdout, "a skip must say the claims are unverified"

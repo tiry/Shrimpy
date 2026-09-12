@@ -316,10 +316,11 @@ Reusable off the shelf: `tools/skill_linter.py`, `hermes prompt-size --json`,
 ## Known gaps
 
 - Memory is off. The deployment runs Hindsight with a per-user bank.
-- No CI yet. `./shrimpy test` is designed to run on every push; `./shrimpy eval`
-  on demand.
 - `tairy-agent` still holds its own copy of these files. Making it consume this
-  repo is the next structural step.
+  repo is the next structural step — [`INTEGRATION.md`](INTEGRATION.md) is the
+  contract for doing it, including the four things that deployment must provide
+  because **the live aquarium data exists nowhere but the volume**. Nothing in
+  this repo can fix those; they are changes to `tairy-agent`.
 - `./shrimpy chat` execs the real `hermes` binary, which does not load the
   harness — so the terminal it grants is a **real** terminal. Interception applies
   to `ask` and `eval` only.

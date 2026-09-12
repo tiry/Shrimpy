@@ -125,63 +125,16 @@ weaken it to land a sentence.
 
 ## Consuming this repo
 
-Read this if you are wiring `tairy-agent` — or any deployment — to this repository.
+Wiring this into `tairy-agent` — or any deployment — is documented in one place:
+**[`INTEGRATION.md`](INTEGRATION.md)**.
 
-### What you get
+The short version: the four root paths drop in unchanged, and `create-profile.sh` already
+handles them. What is *not* handled is that the skill's CLI writes live data to
+`${HERMES_HOME}/workspace/aquarium/`, and **that volume is the only copy** — it is not in
+git and cannot be. The nightly backup cron that would protect it is not installed by
+anything, and the backup/restore round trip in CI asserts a Postgres row rather than a file.
 
-The four root paths above. `create-profile.sh` already handles them; nothing changes.
-
-### What you must provide — live data durability
-
-> **Status: required NOW. [`specs/06`](specs/06-live-data-and-reporting.md) has landed —
-> the skill ships a CLI that writes live data, and that data exists nowhere but the volume.**
-
-The skill ships a CLI (`skills/aquarium/aquarium-supervisor/scripts/aqua.py`) that reads and
-writes live data — measurements, livestock, supplies — at:
-
-```
-${HERMES_HOME}/workspace/aquarium/
-```
-
-That directory is protected from every code path in both repos: it is in `_PROFILE_DIRS`,
-in `USER_OWNED_EXCLUDE`, in the distribution hard-exclude list, and chowned at container
-boot. `create-profile.sh` scopes its `rm -rf` to `skills/` and does not touch it.
-
-**But it will be the only copy of that data.** It is not in git, and it cannot be, because
-the agent writes it and the agent cannot write to a repo. Four consequences:
-
-1. **The nightly backup cron must actually be installed.** Nothing installs it —
-   `docs/ec2-deploy.md:297-311` is a copy-paste block and `scripts/install.sh:160` only
-   *prints* a reminder. Until it runs, this data has one copy on one EBS volume, which is
-   the failure `specs/15:266` names: *"a backup on the same disk as the data survives a bad
-   `docker volume rm` but not a dead EBS volume."*
-
-2. **CI must gain a canary file under `workspace/`.** Today the backup/restore round trip in
-   `.github/workflows/docker-smoke-test.yml` asserts a **Postgres row** survives, and only
-   checks that `hermes-data.tar.gz` is non-empty. No file inside it is ever asserted to
-   round-trip. A canary written before the wipe and read after the restore closes that.
-
-3. **`create-profile.sh` must keep its `rm -rf` scoped to `skills/`.** Widening it to the
-   profile home, or adding `workspace/` to what it replaces, destroys the data on every
-   provision — and `bootstrap.sh` and `update.sh` both call it.
-
-4. **`wipe.sh --yes` and `restore.sh --yes` destroy it.** They are the only two paths that
-   reach it. `restore.sh` is the subtle one: restoring a backup taken *before* the data
-   existed deletes it just as thoroughly as wiping.
-
-One asymmetry worth knowing before an incident: `hermes-data` is captured through
-`dc exec` (`backup.sh:102`), so **it is skipped entirely if the `hermes` container is
-down** — unlike `synapse-media` and `caddy-data`, which are read from the volume directly
-and captured either way.
-
-### Documentation that is already wrong
-
-`tairy-agent/docs/storage.md:85-93` still says the backup does not capture the Hindsight
-database, `synapse-media` or `caddy-data`. `backup.sh` has since been fixed and captures all
-three. Anyone reasoning about backup coverage from that section will reach the wrong
-conclusion.
-
-### What this repo does not own
-
-Matrix accounts, display names, avatars on the homeserver, secrets, Hindsight memory,
-ingress, the container image. Unchanged.
+That detail is deliberately *not* repeated here. It cites line numbers in another repo,
+three of which had already drifted when the note was written — one into an entirely
+unrelated section. `scripts/check-integration-note.sh` re-verifies all eleven citations
+when `../tairy-agent` is present and skips cleanly when it is not.
