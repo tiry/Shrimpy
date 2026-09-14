@@ -351,7 +351,15 @@ def test_log_reports_the_prior_reading_and_delta(data_dir):
     """SOUL.md: "one reading is not a trend. Ask for the previous one." Returning it
     unprompted makes that mechanical rather than hopeful."""
     run(data_dir, "init")
-    result = run(data_dir, "log", "ph", "6.91", "-t", "display", "-i", "kactoily")
+    # Log the baseline here rather than borrowing one from the bundled payload.
+    # This asserted "prior 6.86" against whatever happened to be newest in
+    # assets/initial/, so updating the real tanks' data broke a test of the delta
+    # arithmetic — a change detector, not a behaviour check. Dates sit after every
+    # payload reading so ours is unambiguously the prior.
+    run(data_dir, "log", "ph", "6.86", "-t", "display", "-i", "kactoily",
+        "--at", "2026-09-20T09:00")
+    result = run(data_dir, "log", "ph", "6.91", "-t", "display", "-i", "kactoily",
+                 "--at", "2026-09-20T15:00")
     assert result.returncode == 0, result.stderr
     assert "prior 6.86" in result.stdout
     assert "0.05" in result.stdout
@@ -477,8 +485,14 @@ def _line_profile(png_path) -> list[tuple[int, float]]:
     return profile
 
 
-def _log_series(data_dir, values, metric="ph", tank="display"):
-    """Log a series on consecutive days so the chart has a known shape."""
+def _log_series(data_dir, values, metric="tds", tank="staging"):
+    """Log a series on consecutive days so the chart has a known shape.
+
+    Defaults to a metric/tank pair the bundled payload leaves empty, so the
+    plotted line is exactly this series. On display/ph it was not: the payload's
+    own readings were drawn too, and a later one appended to assets/initial/ made
+    a deliberately falling series render with a rising tail.
+    """
     for index, value in enumerate(values):
         day = f"2026-08-0{index + 1}" if index < 9 else f"2026-08-{index + 1}"
         run(data_dir, "log", metric, str(value), "-t", tank,
@@ -495,10 +509,10 @@ def test_the_plotted_line_follows_the_data(data_dir):
     """
     pytest.importorskip("PIL")
     run(data_dir, "init")
-    _log_series(data_dir, [6.60, 6.70, 6.80, 6.90, 7.00, 7.10, 7.20])
+    _log_series(data_dir, [150, 160, 170, 180, 190, 200, 210])
 
     png = data_dir / "rising.png"
-    result = run(data_dir, "plot", "ph", "-t", "display", "--out", str(png))
+    result = run(data_dir, "plot", "tds", "-t", "staging", "--out", str(png))
     assert result.returncode == 0, result.stderr
 
     profile = _line_profile(png)
@@ -506,7 +520,7 @@ def test_the_plotted_line_follows_the_data(data_dir):
     first_y = profile[0][1]
     last_y = profile[-1][1]
     assert last_y < first_y - 40, (
-        f"a rising pH series should render as a rising line; y went {first_y:.0f} -> {last_y:.0f}"
+        f"a rising series should render as a rising line; y went {first_y:.0f} -> {last_y:.0f}"
     )
 
 
@@ -515,10 +529,10 @@ def test_a_falling_series_renders_falling(data_dir):
     always draws the same slope would pass."""
     pytest.importorskip("PIL")
     run(data_dir, "init")
-    _log_series(data_dir, [7.20, 7.10, 7.00, 6.90, 6.80, 6.70, 6.60])
+    _log_series(data_dir, [210, 200, 190, 180, 170, 160, 150])
 
     png = data_dir / "falling.png"
-    run(data_dir, "plot", "ph", "-t", "display", "--out", str(png))
+    run(data_dir, "plot", "tds", "-t", "staging", "--out", str(png))
     profile = _line_profile(png)
     assert profile[-1][1] > profile[0][1] + 40, "a falling series should render as a falling line"
 
@@ -531,7 +545,7 @@ def test_the_target_band_is_drawn_where_the_target_is(data_dir):
     from PIL import Image
 
     run(data_dir, "init")
-    _log_series(data_dir, [6.60, 6.80, 7.00, 7.20, 7.40])
+    _log_series(data_dir, [6.60, 6.80, 7.00, 7.20, 7.40], metric="ph", tank="display")
 
     png = data_dir / "band.png"
     run(data_dir, "plot", "ph", "-t", "display", "--out", str(png))

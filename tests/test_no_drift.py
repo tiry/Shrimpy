@@ -290,3 +290,38 @@ def test_livestock_notes_do_not_freeze_a_count():
                 f"{path.name}: {animal['id']} note states {match.group(0)!r}. "
                 "The count is a field; a note repeating it goes stale."
             )
+
+
+def test_skill_md_does_not_contradict_the_recorded_water_regime():
+    """A policy claim in prose that outlived its data.
+
+    `SKILL.md` asserted "distilled top-off only, no water changes, in either tank"
+    for as long as that was true, and stayed there after a 20% change was logged
+    against the display tank.
+
+    The scans above cannot see this. There is no number and nothing attributed to
+    a tank — just a statement of policy that `tanks.json` had stopped agreeing
+    with. It is the same class as the eight contradictions spec 06 removed, in the
+    one shape a regex was never going to catch, so it gets a direct check against
+    the data instead.
+    """
+    import json
+
+    tanks = json.loads(
+        (SKILL_DIR / "assets" / "initial" / "tanks.json").read_text(encoding="utf-8")
+    )["tanks"]
+    regimes = {name: tank.get("water_regime", "") for name, tank in tanks.items()}
+    changing = sorted(
+        name for name, regime in regimes.items()
+        if "no water changes" not in regime.lower()
+    )
+
+    text = body(SKILL_DIR / "SKILL.md").lower()
+    claims_none = "no water changes, in either tank" in text or (
+        "distilled top-off only, no water changes" in text and "either tank" in text
+    )
+    assert not (claims_none and changing), (
+        f"SKILL.md says no tank takes water changes, but tanks.json records changes "
+        f"for: {changing}. The prose has outlived the data — say the regime is per "
+        f"tank and point at `aqua tanks`."
+    )

@@ -2,14 +2,44 @@
   "schema_version": 1,
   "animals": [
     {
-      "id": "display-neocaridina",
+      "id": "display-neocaridina-red",
       "tank": "display",
       "species": "neocaridina",
-      "name": "Neocaridina shrimp",
-      "count": 9,
+      "name": "Neocaridina shrimp (red)",
+      "count": 8,
       "added": null,
       "confidence": "confirmed",
-      "notes": "A small colony, so every loss is proportionally significant. Investigate any death rather than writing it off as attrition."
+      "notes": "The four colour groups share one tank and interbreed freely, so the lines will trend toward wild brown over successive generations. Separating a line needs a second tank, not a divider."
+    },
+    {
+      "id": "display-neocaridina-yellow",
+      "tank": "display",
+      "species": "neocaridina",
+      "name": "Neocaridina shrimp (yellow)",
+      "count": 3,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Interbreeds with the other colour groups in this tank."
+    },
+    {
+      "id": "display-neocaridina-red-white",
+      "tank": "display",
+      "species": "neocaridina",
+      "name": "Neocaridina shrimp (red and white)",
+      "count": 3,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Interbreeds with the other colour groups in this tank."
+    },
+    {
+      "id": "display-neocaridina-orange-white",
+      "tank": "display",
+      "species": "neocaridina",
+      "name": "Neocaridina shrimp (orange and white)",
+      "count": 3,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Interbreeds with the other colour groups in this tank."
     },
     {
       "id": "display-guppy",
@@ -19,47 +49,37 @@
       "count": 9,
       "added": null,
       "confidence": "confirmed",
-      "notes": "Sex ratio unknown. If mixed, fry within weeks and a compounding bioload in a tank with no nitrate export."
+      "notes": "Sex ratio unknown. If mixed, fry within weeks and a compounding bioload. Guppies take shrimplets, so recruitment in a shared tank depends on cover."
+    },
+    {
+      "id": "display-mystery-snail",
+      "tank": "display",
+      "species": "mystery_snail",
+      "name": "Albino mystery snail",
+      "count": 4,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Adults are commonly given 2.5-5 gal each, so this group is the largest single bioload in the tank. Shell condition is the health signal to watch."
+    },
+    {
+      "id": "display-nerite",
+      "tank": "display",
+      "species": "nerite",
+      "name": "Red Racer nerite",
+      "count": 1,
+      "added": null,
+      "confidence": "confirmed",
+      "notes": "Grazes biofilm only and cannot breed in fresh water, so this group only ever shrinks. Losses are not replaced from within."
     },
     {
       "id": "display-sucker",
       "tank": "display",
       "species": "otocinclus",
-      "name": "Suckermouth catfish",
+      "name": "Otocinclus",
       "count": 1,
       "added": null,
-      "confidence": "unconfirmed",
-      "notes": "Otocinclus or juvenile pleco - not established which. Alone, and Otocinclus are shoaling animals needing 5-6+. A common pleco reaches 30 cm and would outgrow this tank entirely. The belly check is the only health signal available."
-    },
-    {
-      "id": "staging-mystery-snail",
-      "tank": "staging",
-      "species": "mystery_snail",
-      "name": "Albino mystery snail",
-      "count": 3,
-      "added": null,
       "confidence": "confirmed",
-      "notes": "Adults are commonly given 2.5-5 gal each, which is the core of the overstocking problem in a four-gallon tank."
-    },
-    {
-      "id": "staging-nerite",
-      "tank": "staging",
-      "species": "nerite",
-      "name": "Red Racer nerite",
-      "count": 3,
-      "added": null,
-      "confidence": "confirmed",
-      "notes": "Grazes biofilm only. The tank is planted, so there is real grazing surface, but a young setup carries thin biofilm and every grazer competes for it."
-    },
-    {
-      "id": "staging-neocaridina",
-      "tank": "staging",
-      "species": "neocaridina",
-      "name": "Neocaridina shrimp",
-      "count": 9,
-      "added": null,
-      "confidence": "confirmed",
-      "notes": "On a 3-4 week molt clock, in the tank with the lowest GH."
+      "notes": "Species confirmed. Alone, and Otocinclus are shoaling animals - see the shoal minimum in `aqua species otocinclus`. The belly check is the health signal: rounded means feeding, flat or sunken is the warning."
     }
   ]
 }

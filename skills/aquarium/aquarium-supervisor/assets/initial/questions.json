@@ -37,10 +37,10 @@
     {
       "id": 5,
       "text": "Is the suckermouth an Otocinclus or a juvenile pleco? A common pleco would outgrow the tank.",
-      "status": "open",
+      "status": "answered",
       "asked": "2026-09-05",
-      "answered_at": null,
-      "answer": null
+      "answered_at": "2026-09-13",
+      "answer": "Confirmed an Otocinclus, not a pleco. It is alone, which is the live concern - the species is shoaling and `aqua species otocinclus` records a shoal minimum this does not meet."
     },
     {
       "id": 6,
@@ -53,16 +53,48 @@
     {
       "id": 7,
       "text": "How long have the staging animals been in quarantine, and what is the plan for moving them out?",
-      "status": "open",
+      "status": "answered",
       "asked": "2026-09-05",
-      "answered_at": null,
-      "answer": null
+      "answered_at": "2026-09-13",
+      "answer": "Moved to the display tank on 2026-09-12. The staging tank is now empty and still running."
     },
     {
       "id": 8,
       "text": "Plant species in the staging tank and how established they are - it determines how much grazing surface the nerites and shrimp actually have.",
-      "status": "open",
+      "status": "answered",
       "asked": "2026-09-05",
+      "answered_at": "2026-09-13",
+      "answer": "Moot for now - the staging tank holds no animals, so grazing surface there is no longer a constraint. Re-ask if it is restocked."
+    },
+    {
+      "id": 9,
+      "text": "When did the Neocaridina and the two nerites die? All three were in the staging tank, which measured below both the 4 dGH molt floor and the species KH minimum on 2026-09-05. Dates would confirm or rule that out.",
+      "status": "open",
+      "asked": "2026-09-13",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 10,
+      "text": "Nitrate in the display tank - untested since the stocking rose and the first water change. It is the metric the change was meant to move and the one with no other export path.",
+      "status": "open",
+      "asked": "2026-09-13",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 11,
+      "text": "The four Neocaridina colour groups now share one tank and will interbreed toward wild brown. Is keeping the lines separate wanted? The staging tank is empty and cycled.",
+      "status": "open",
+      "asked": "2026-09-13",
+      "answered_at": null,
+      "answer": null
+    },
+    {
+      "id": 12,
+      "text": "Temperature was not captured with the latest pen reading, though the Kactoily reports it. Worth having alongside pH and ORP.",
+      "status": "open",
+      "asked": "2026-09-13",
       "answered_at": null,
       "answer": null
     }

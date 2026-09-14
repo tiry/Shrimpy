@@ -235,8 +235,8 @@ through instead of flattening it.
 
 ## Water changes
 
-The current regime is distilled top-off only, no water changes, in either tank —
-check `aqua tanks` for what is actually recorded.
+The regime differs per tank now — **check `aqua tanks`**, which is the only current
+record. Partial changes have begun on one of them; the other is still top-off only.
 
 Top-off with 0 TDS water is correct and should continue: it replaces evaporated
 water without adding minerals. But it is not maintenance. **Evaporation removes

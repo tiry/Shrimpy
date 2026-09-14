@@ -41,7 +41,7 @@
         }
       ],
       "cooling": "Open-top lid, 12V fans at 45 degrees across the surface, lighting raised 2-3 in, heater off or low. Evaporative cooling gives about 2.0-3.5 C below ambient, bounded by room wet-bulb.",
-      "water_regime": "Distilled top-off only. No water changes.",
+      "water_regime": "Distilled top-off, plus periodic partial water changes. Changes began 2026-09-12; `aqua event` carries each one.",
       "targets": {
         "ph": {
           "min": 6.8,
@@ -154,7 +154,7 @@
         }
       ],
       "cooling": null,
-      "water_regime": "Distilled top-off only. No water changes.",
+      "water_regime": "Distilled top-off only. No water changes. Currently empty - see `aqua livestock`.",
       "targets": {
         "ph": {
           "min": 6.8,

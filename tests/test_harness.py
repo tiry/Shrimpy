@@ -902,3 +902,70 @@ def test_the_provenance_guard_catches_the_real_regression():
         "obtained from the aquarium CLI rather than asserted."
     ).lower()
     assert [p for p in PROVENANCE_PHRASES if p in rubric], "the guard would not fire"
+
+
+def test_the_migration_payload_does_not_invalidate_the_cache():
+    """`assets/initial/` seeds a fresh store and is never read by an eval.
+
+    Every case runs with `--data-dir` injected at `evals/fixtures/`
+    (harness/interception.py), so the bundled payload cannot reach a reply. While
+    it was hashed, updating the real tanks' roster forced a full live re-record to
+    reproduce byte-identical answers — a false cache miss with a price attached.
+    """
+    from harness.snapshot import definition_sha
+
+    payload = (
+        REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor" / "assets" / "initial"
+    )
+    files = sorted(payload.glob("*"))
+    assert files, "no migration payload found — this test would pass vacuously"
+
+    baseline = definition_sha()
+    for path in files:
+        original = path.read_bytes()
+        try:
+            path.write_bytes(original + b"\n")
+            assert definition_sha() == baseline, (
+                f"editing {path.name} invalidated every eval snapshot, but no eval "
+                "reads the migration payload"
+            )
+        finally:
+            path.write_bytes(original)
+    assert definition_sha() == baseline, "probe did not restore cleanly"
+
+
+def test_the_fixtures_still_do_invalidate_the_cache():
+    """The other half. Fixtures are what cases actually read, so an edit there
+    must invalidate — excluding the payload must not have widened into them."""
+    from harness.snapshot import definition_sha
+
+    fixture = REPO_ROOT / "evals" / "fixtures" / "aquarium" / "livestock.json"
+    assert fixture.is_file()
+    baseline = definition_sha()
+    original = fixture.read_bytes()
+    try:
+        fixture.write_bytes(original + b"\n")
+        assert definition_sha() != baseline, "a fixture edit must invalidate the cache"
+    finally:
+        fixture.write_bytes(original)
+    assert definition_sha() == baseline
+
+
+def test_evals_read_the_fixtures_not_the_payload():
+    """The premise the exclusion rests on, asserted rather than assumed.
+
+    Checked against the real constant the run path copies from, not by reading
+    source text for a pattern.
+    """
+    from harness.agent import AQUA_FIXTURES
+
+    assert AQUA_FIXTURES == REPO_ROOT / "evals" / "fixtures" / "aquarium", (
+        f"eval runs seed their data dir from {AQUA_FIXTURES}, which is no longer "
+        "the fixture tree — the definition_sha exclusion assumes it is"
+    )
+    assert AQUA_FIXTURES.is_dir(), "the fixture tree is missing"
+    payload = (
+        REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor" / "assets" / "initial"
+    )
+    assert payload != AQUA_FIXTURES
+    assert payload not in AQUA_FIXTURES.parents

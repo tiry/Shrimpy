@@ -51,6 +51,12 @@ RUN_INPUTS = (
 )
 
 
+def _is_migration_payload(path: Path) -> bool:
+    """`<skill>/assets/initial/**` — seeds a fresh store, never read by an eval."""
+    parts = path.parts
+    return "assets" in parts and "initial" in parts[parts.index("assets") :]
+
+
 def definition_sha() -> str:
     """A digest of the agent definition and the harness config that runs it.
 
@@ -62,6 +68,13 @@ def definition_sha() -> str:
     Fixtures are in here because they change the answer: a case that reads
     `aqua status` gets a different reply if the fixture's readings change, and a
     cached pass would otherwise keep reporting the old one.
+
+    `assets/initial/` is excluded for the mirror-image reason. It is the one-time
+    migration payload a fresh deployment is seeded from, and every eval runs with
+    `--data-dir` pointed at `evals/fixtures/` instead (harness/interception.py), so
+    no case can read it and no edit to it can change a reply. Hashing it meant
+    updating the real tanks' roster cost a full live re-record to reproduce
+    byte-identical answers.
 
     RUN_INPUTS is the same argument one level up. Widening the aqua allow-list in
     interception.py, changing RUN_TOOLSETS in agent.py, or switching the default
@@ -83,7 +96,9 @@ def definition_sha() -> str:
             paths.extend(
                 sorted(
                     p for p in tree.rglob("*")
-                    if p.is_file() and "__pycache__" not in p.parts
+                    if p.is_file()
+                    and "__pycache__" not in p.parts
+                    and not _is_migration_payload(p)
                 )
             )
     for path in paths:
