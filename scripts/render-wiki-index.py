@@ -28,12 +28,13 @@ START = "<!-- WIKI-INDEX START -->"
 END = "<!-- WIKI-INDEX END -->"
 
 # Order the model is most likely to need them in, not alphabetical.
-CATEGORY_ORDER = ["species", "pest", "product", "method"]
+CATEGORY_ORDER = ["species", "pest", "metric", "product", "method"]
 CATEGORY_LABEL = {
     "species": "The animals",
     "pest": "Pests, disease and algae",
     "product": "What is in the bottle",
     "method": "How an instrument measures",
+    "metric": "What a number means",
 }
 
 

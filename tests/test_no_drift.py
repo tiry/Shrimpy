@@ -205,6 +205,12 @@ SPECIES_RANGE_RE = re.compile(
 SPECIES_FILES = [
     SKILL_DIR / "references" / "livestock.md",
     *sorted((WIKI_DIR / "species").glob("*.md")),
+    # Metric pages are the other place a tolerance band wants to reappear: a page
+    # about GH naturally reaches for "6-12 dGH", and a page about TDS for
+    # "150-250 ppm". Both are Neocaridina's, both are `aqua species`'s to state.
+    # Mechanism ranges without a species attached (aragonite stalling at 7.2-7.5)
+    # do not match this pattern and stay legal.
+    *sorted((WIKI_DIR / "metric").glob("*.md")),
 ]
 
 

@@ -453,3 +453,31 @@ cases:
       eating shrimplets - rather than treating it purely as a water-chemistry
       question. Asking what else is in the tank is good. Confidently asserting a
       cause without checking the roster is a FAIL.
+
+  - id: orp-is-not-an-ammonia-test
+    why: >
+      The one metric with a documented misconception attached. SKILL.md carries a
+      standing rule that ORP does not indicate ammonia, and records that Tiry has
+      been told otherwise. This is where a metric page is load-bearing rather than
+      decorative: getting it wrong means a reassuringly high number substituting
+      for the test that would have caught an ammonia spike.
+      This case does NOT assert `opens_wiki`, and the reason is the finding. It did,
+      and the agent failed it while giving a better answer than the rubric asked
+      for - because SKILL.md already owns this rule, so the page was never needed.
+      That exposed the page as a near-verbatim copy of SKILL.md, which is the
+      duplication spec 06 exists to prevent; the page now defers instead, and
+      `test_a_wiki_page_does_not_restate_the_rules` keeps it that way. The rule
+      being in the always-loaded file is the correct design, so requiring a lookup
+      would be asserting a worse one.
+    prompt: "ORP is sitting at 441 which seems healthy - does that mean ammonia is fine?"
+    expect:
+      opens_skills: [aquarium-supervisor]
+      matches_any: ["ammonia"]
+    judge: >
+      The reply must say clearly that ORP does NOT tell you whether ammonia is
+      present, and that ammonia has to be measured directly. Credit for the reason
+      - ORP is dominated by dissolved oxygen in an aerated tank, ammonia is a
+      trace reductant easily swamped, and the probe is uncalibrated for ORP.
+      Agreeing that a high ORP means ammonia is fine is a severe FAIL. Hedging
+      without a clear answer is a FAIL.
+      Judge only the text; which files were opened is proved by `opens_wiki`.

@@ -21,14 +21,14 @@ import json
 import re
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, body
 
 SKILL_DIR = REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor"
 WIKI_DIR = SKILL_DIR / "assets" / "wiki"
 SKILL_MD = SKILL_DIR / "SKILL.md"
 REFERENCE = SKILL_DIR / "assets" / "reference.json"
 
-CATEGORIES = {"species", "pest", "product", "method"}
+CATEGORIES = {"species", "pest", "product", "method", "metric"}
 
 # One page should be one cheap read. The generic tool-result spillover threshold is
 # 100_000 chars, but that is a ceiling for catastrophe, not a budget: a page past this is
@@ -144,10 +144,14 @@ def test_aqua_key_resolves(path):
     if key is None:
         return
     reference = json.loads(REFERENCE.read_text(encoding="utf-8"))
-    pool = {**reference.get("species", {}), **reference.get("products", {})}
+    pool = {
+        **reference.get("species", {}),
+        **reference.get("products", {}),
+        **reference.get("metrics", {}),
+    }
     assert key in pool, (
-        f"{path.name}: aqua_key {key!r} is in neither species nor products in "
-        f"reference.json. Known: {sorted(pool)}"
+        f"{path.name}: aqua_key {key!r} is in none of species, products or metrics "
+        f"in reference.json. Known: {sorted(pool)}"
     )
 
 
@@ -243,4 +247,144 @@ def test_every_species_in_reference_json_has_a_reachable_page():
     assert not unreachable, (
         f"species in reference.json with no page `aqua species` can point at: "
         f"{unreachable}. The filename must equal the reference.json key."
+    )
+
+
+# --------------------------------------------------------------------------- #
+# metric pages — spec 10
+# --------------------------------------------------------------------------- #
+
+# A metric page names levers. Amounts come from `aqua dose`, procedure from
+# triage.md. Without this the pages would slowly absorb both and become a second,
+# drifting copy of the emergency runbook.
+AMOUNT_RE = re.compile(
+    r"\b\d+(?:\.\d+)?\s*(?:tbsp|tsp|tablespoons?|teaspoons?|m[lL]|gal|gallons?)\b"
+    r"|\b(?:a|one|two|half a)\s+(?:tbsp|tsp|tablespoon|teaspoon)\b",
+    re.IGNORECASE,
+)
+
+
+def metric_pages() -> list:
+    return sorted((WIKI_DIR / "metric").glob("*.md"))
+
+
+def test_every_metric_in_reference_json_has_a_page():
+    """`aqua check` derives the background path from the metric key, so a page
+    whose filename does not match is invisible to the CLI.
+
+    Same failure `mystery-snail.md` had against the key `mystery_snail`.
+    """
+    reference = json.loads(REFERENCE.read_text(encoding="utf-8"))
+    missing = sorted(
+        key for key in reference["metrics"]
+        if not (WIKI_DIR / "metric" / f"{key}.md").is_file()
+    )
+    assert not missing, f"metrics with no background page: {missing}"
+
+
+def test_every_metric_page_names_a_real_metric():
+    """The other direction — a page about a metric `aqua` does not track is a
+    dead end: background with nowhere to get the value."""
+    reference = json.loads(REFERENCE.read_text(encoding="utf-8"))
+    unknown = sorted(
+        p.stem for p in metric_pages() if p.stem not in reference["metrics"]
+    )
+    assert not unknown, (
+        f"metric pages naming nothing in reference.json: {unknown}. "
+        f"Known: {sorted(reference['metrics'])}"
+    )
+
+
+@pytest.mark.parametrize("path", metric_pages(), ids=lambda p: p.name)
+def test_a_metric_page_states_no_amounts(path):
+    """Levers, not doses.
+
+    `aqua dose` computes every amount from measured volume, and triage.md owns
+    the procedure. An amount here is a third copy that cannot be recomputed and
+    goes stale the moment a volume is remeasured.
+    """
+    findings = []
+    in_fence = False
+    for number, line in enumerate(body(path).splitlines(), start=1):
+        if line.strip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or "aqua" in line:
+            continue
+        match = AMOUNT_RE.search(line)
+        if match:
+            findings.append(f"  {path.name}:{number}: {match.group(0)!r}\n    {line.strip()[:90]}")
+    assert not findings, (
+        "a metric page states an amount; `aqua dose` and triage.md own those:\n"
+        + "\n".join(findings)
+    )
+
+
+@pytest.mark.parametrize("path", metric_pages(), ids=lambda p: p.name)
+def test_a_metric_page_links_the_reference_that_owns_the_procedure(path):
+    """The lever/procedure split is only navigable if the page says where the
+    procedure lives. Otherwise a reader gets 'carbonate raises KH' and stops."""
+    text = path.read_text(encoding="utf-8")
+    assert "references/" in text, (
+        f"{path.name} links no reference. A metric page names levers; it must "
+        "point at triage.md or chemistry.md for what to actually do."
+    )
+
+
+# --------------------------------------------------------------------------- #
+# the wiki must not become a second copy of the rules
+# --------------------------------------------------------------------------- #
+
+SHINGLE_WORDS = 9
+
+# A page may restate a *conclusion* — "ORP does not tell you whether there is
+# ammonia" is the point of the page and appears in SKILL.md too. It must not
+# restate the *argument*. The first is one shared run; the second was seventeen.
+MAX_SHARED_RUNS = 2
+
+
+def _shingles(text: str, size: int = SHINGLE_WORDS) -> set[str]:
+    """Word n-grams, ignoring fenced code so repeated CLI invocations don't count."""
+    kept, in_fence = [], False
+    for line in text.splitlines():
+        if line.strip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if not in_fence:
+            kept.append(line)
+    words = re.findall(r"[a-z0-9]+", "\n".join(kept).lower())
+    return {" ".join(words[i : i + size]) for i in range(len(words) - size + 1)}
+
+
+def _rule_shingles() -> dict[str, str]:
+    owners: dict[str, str] = {}
+    sources = [SKILL_MD, *sorted((SKILL_DIR / "references").glob("*.md"))]
+    for path in sources:
+        for shingle in _shingles(body(path)):
+            owners.setdefault(shingle, path.name)
+    return owners
+
+
+@pytest.mark.parametrize("path", wiki_pages(), ids=pytest_ids)
+def test_a_wiki_page_does_not_restate_the_rules(path):
+    """The duplication spec 06 removed, re-entering through the wiki.
+
+    `metric/orp.md` was written with all four of SKILL.md's reasons that ORP is
+    not an ammonia test, copied almost verbatim — seventeen shared nine-word runs.
+    Two copies of a safety rule drift, and then the answer depends on which file
+    the model opened. The eval that caught it passed anyway: the agent answered
+    correctly from SKILL.md without opening the page at all.
+
+    Detected as shared word runs rather than by review, because every individual
+    sentence looked fine — which is exactly why the original eight contradictions
+    survived review too.
+    """
+    owners = _rule_shingles()
+    shared = sorted(sh for sh in _shingles(body(path)) if sh in owners)
+    assert len(shared) <= MAX_SHARED_RUNS, (
+        f"{path.name} shares {len(shared)} nine-word runs with the rules it should "
+        f"be pointing at ({sorted({owners[sh] for sh in shared})}):\n\n  "
+        + "\n  ".join(f'"{sh}"' for sh in shared[:6])
+        + "\n\nA page may restate a conclusion; it must not restate the argument. "
+        "Link the owner instead."
     )

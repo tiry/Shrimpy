@@ -1,7 +1,7 @@
 # Specs
 
 Scoped, executable work items for this repository. **The number is the execution order** —
-work `01` through `09`.
+work `01` through `10`.
 
 The convention is borrowed from [`tairy-agent/specs`](../../tairy-agent/specs/README.md),
 which consumes this repo. Same numbering, same section layout, same rule about citations.
@@ -28,8 +28,9 @@ drift — if one doesn't match, trust the quoted text.
 `01` establishes the repo and the harness. `02`–`05` are each a distinct testing capability
 built on it, in the order they were needed. `06` is the first spec that changes what the
 agent *is* rather than how it is tested. `07` puts the whole lot on CI, `08` makes a
-live run readable rather than merely green, and `09` gives the agent background knowledge
-about the animals without re-opening the drift hole `06` closed.
+live run readable rather than merely green, `09` gives the agent background knowledge
+about the animals without re-opening the drift hole `06` closed, and `10` extends that to
+the numbers it reads every day.
 
 A ✅ marks a spec that has been implemented.
 
@@ -44,6 +45,7 @@ A ✅ marks a spec that has been implemented.
 | [07](07-ci-and-lint.md) ✅ | CI and a lint baseline | Nothing runs on push, there is no lint config at all, and no schedule catches the model moving under a stable alias | Medium |
 | [08](08-eval-transcripts.md) | Eval transcripts | A live run says pass or fail and cannot show what the agent said — three times the case was wrong and only the reply revealed it | Medium |
 | [09](09-background-wiki.md) ✅ | Background wiki | The skill knows what a species *tolerates* and nothing about what it *is*; the model fills the gap unsourced | Medium |
+| [10](10-metric-pages.md) ✅ | Metric pages | `aqua` tracks fourteen metrics and the skill defines none of them; one already carries a documented misconception | Medium |
 
 ## Dependencies
 

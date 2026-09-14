@@ -350,6 +350,21 @@ the only copy that is current.
 | Ichthyophthirius multifiliis, ich, ick, white spot, white spot disease | `assets/wiki/pest/ich.md` |
 | Planaria, planaria, flatworm, flatworms | `assets/wiki/pest/planaria.md` |
 | Scutariella japonica, scutariella, white worms on shrimp, nose worms, rostrum worms | `assets/wiki/pest/scutariella.md` |
+| **What a number means** | |
+| Ammonia, ammonia, NH3, ammonium, NH4 | `assets/wiki/metric/ammonia.md` |
+| Copper, copper, Cu, heavy metal | `assets/wiki/metric/copper.md` |
+| EC — electrical conductivity, EC, conductivity, microsiemens, uS/cm | `assets/wiki/metric/ec.md` |
+| Free chlorine, chlorine, free chlorine, Cl2, chloramine, tap water | `assets/wiki/metric/free_chlorine.md` |
+| GH — general hardness, GH, general hardness, hardness, dGH, calcium, magnesium | `assets/wiki/metric/gh.md` |
+| Iron, iron, Fe, micronutrient | `assets/wiki/metric/iron.md` |
+| KH — carbonate hardness, KH, carbonate hardness, alkalinity, buffer, dKH | `assets/wiki/metric/kh.md` |
+| Nitrate, nitrate, NO3, nitrates | `assets/wiki/metric/nitrate.md` |
+| Nitrite, nitrite, NO2, nitrites | `assets/wiki/metric/nitrite.md` |
+| ORP — oxidation-reduction potential, ORP, redox, redox potential, mV | `assets/wiki/metric/orp.md` |
+| Phosphate, phosphate, PO4, phosphates | `assets/wiki/metric/phosphate.md` |
+| TDS — total dissolved solids, TDS, dissolved solids, ppm | `assets/wiki/metric/tds.md` |
+| Temperature, temperature, temp, heat, cooling, degrees | `assets/wiki/metric/temperature.md` |
+| pH, pH, acidity, alkaline, acidic | `assets/wiki/metric/ph.md` |
 | **What is in the bottle** | |
 | API Melafix, Melafix, tea tree, melaleuca, bacterial remedy | `assets/wiki/product/melafix.md` |
 | Seachem Prime, Prime, dechlorinator, conditioner, water conditioner | `assets/wiki/product/prime.md` |

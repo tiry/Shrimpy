@@ -97,13 +97,21 @@ shown the reply and nothing else — it cannot see tool calls. A rubric asking f
 the older rule. Scope a lookup requirement to what is specific to these animals and
 products — the planaria/snail treatment conflict is the paradigm case.
 
-**When an eval fails, read the reply before touching the skill.** **Seven times** now the
+**A wiki page must not restate a rule SKILL.md or a reference already owns.** `metric/orp.md`
+was written with all four of `SKILL.md`'s reasons that ORP is not an ammonia test, copied
+almost verbatim — and the eval meant to catch it *passed*, because the agent answered
+correctly from `SKILL.md` without opening the page. Duplication in prose survives review
+because every sentence looks fine; `tests/test_wiki.py` measures it as shared nine-word
+runs instead. A page may restate a conclusion, never the argument.
+
+**When an eval fails, read the reply before touching the skill.** **Eight times** now the
 harness was wrong and the agent was right — it named `3.2 mL` *in order to correct it*,
 scoped a caution with a sentence containing "do not add", chose a more targeted CLI verb
 than the one asserted, said "don't dose chemical pH adjusters" against a case that banned
 the phrase, gave a correct range that a rubric called unsourced because the judge cannot see
-a tool call, and answered a husbandry question from ordinary knowledge exactly as SKILL.md
-instructs. A substring test cannot tell "recommends X" from "warns against X".
+a tool call, answered a husbandry question from ordinary knowledge exactly as SKILL.md instructs, and
+gave a fuller answer on ORP than the rubric demanded without needing the page an
+`opens_wiki` assertion insisted on. A substring test cannot tell "recommends X" from "warns against X".
 `tests/test_harness.py` now refuses a `not_matches` with no rubric behind it; every run
 renders a transcript, so read it first.
 

@@ -332,6 +332,10 @@ def cmd_check(st: Store, args) -> int:
                 f"(logged {calc.age_phrase(flag['at'])})")
             if flag.get("note"):
                 out(f"      {flag['note']}")
+            page = store.wiki_page("metric", flag["metric"])
+            if page:
+                payload.setdefault("_background", {})[flag["metric"]] = page
+                out(f"      background: {page}")
 
         gh = calc.latest(readings, tank_id, "gh")
         kh = calc.latest(readings, tank_id, "kh")
