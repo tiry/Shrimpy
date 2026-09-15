@@ -1,7 +1,7 @@
 # Specs
 
 Scoped, executable work items for this repository. **The number is the execution order** —
-work `01` through `10`.
+work `01` through `11`.
 
 The convention is borrowed from [`tairy-agent/specs`](../../tairy-agent/specs/README.md),
 which consumes this repo. Same numbering, same section layout, same rule about citations.
@@ -29,8 +29,9 @@ drift — if one doesn't match, trust the quoted text.
 built on it, in the order they were needed. `06` is the first spec that changes what the
 agent *is* rather than how it is tested. `07` puts the whole lot on CI, `08` makes a
 live run readable rather than merely green, `09` gives the agent background knowledge
-about the animals without re-opening the drift hole `06` closed, and `10` extends that to
-the numbers it reads every day.
+about the animals without re-opening the drift hole `06` closed, `10` extends that to
+the numbers it reads every day, and `11` adds the two skills from hermes's own library that
+fit — while recording that the deployment was never running only the aquarium one.
 
 A ✅ marks a spec that has been implemented.
 
@@ -46,6 +47,7 @@ A ✅ marks a spec that has been implemented.
 | [08](08-eval-transcripts.md) | Eval transcripts | A live run says pass or fail and cannot show what the agent said — three times the case was wrong and only the reply revealed it | Medium |
 | [09](09-background-wiki.md) ✅ | Background wiki | The skill knows what a species *tolerates* and nothing about what it *is*; the model fills the gap unsourced | Medium |
 | [10](10-metric-pages.md) ✅ | Metric pages | `aqua` tracks fourteen metrics and the skill defines none of them; one already carries a documented misconception | Medium |
+| [11](11-vendored-skills.md) ✅ | Vendored skills | The deployment re-seeds all 58 bundled skills on every gateway restart; two of them are worth keeping deliberately | Medium |
 
 ## Dependencies
 

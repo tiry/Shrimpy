@@ -4,7 +4,7 @@ For whoever wires **Shrimpy** into [`tairy-agent`](../tairy-agent) — or any ot
 deployment. Nothing in this file changes anything in that repo; it is the list of things
 that repo has to be true for the agent defined here to survive contact with a real server.
 
-> **Citations were verified against `tairy-agent` at `e53c3bf`**, which vendors
+> **Citations were verified against `tairy-agent` at `9306cf0`**, which vendors
 > `hermes-agent` at `29112be` — the same commit this repo pins. Line numbers in another
 > repo drift; three of them already had when this note was written, so **re-check before
 > acting, and treat a miss as a moved line rather than a fixed problem.**
@@ -65,60 +65,48 @@ dc exec -T hermes sh -c "rm -rf '${home}/skills' && mkdir -p '${home}/skills'"
 
 ---
 
-## 3. What is not done yet
+## 3. Live-data durability: mostly done, one item left
 
-Four items, in the order they bite.
+This section listed four gaps. **Three have since been closed** — the note is kept rather
+than deleted because what was fixed, and how, is the useful record.
 
-### 3.1 The nightly backup cron is not installed by anything
+### 3.1 The nightly backup cron is still not installed by anything — OPEN
 
-`docs/ec2-deploy.md:295-310` is a copy-paste block for a human. `scripts/install.sh:160`
-only *prints* a reminder:
-
-```
-3. Set up nightly backups — docs/ec2-deploy.md
-```
-
-Until someone runs that block, this data has **one copy on one EBS volume** — precisely the
-failure `specs/15:264-268` names:
-
-> a backup on the same disk as the data survives a bad `docker volume rm` but not a dead
-> EBS volume
-
-This is the highest-consequence item in this file.
-
-### 3.2 CI proves a Postgres row round-trips, not a file
-
-`.github/workflows/docker-smoke-test.yml` does test backup/restore, and does it carefully —
-but the canary it restores and asserts is a **database row**:
+`scripts/backup-nightly.sh` now exists, which is the hard part. What is still missing is
+anything that *schedules* it. `docs/ec2-deploy.md:490` is a copy-paste block for a human:
 
 ```sh
-got="$(dc exec -T postgres psql -U "$POSTGRES_USER" -d hindsight -tAc \
-  "SELECT v FROM ci_canary" ...)"
-[ "$got" = "CI-CANARY-VALUE" ] || { echo "restored data does not match"; exit 1; }
+( crontab -l 2>/dev/null
+  echo "0 3 * * * /home/ubuntu/tairy-agent/scripts/backup-nightly.sh >> /home/ubuntu/backup.log 2>&1"
+) | crontab -
 ```
 
-For `hermes-data.tar.gz` the only assertion is that the file is non-empty (`[ -s "$d/$f" ]`,
-around `:1333-1338`). **No file inside that tarball is ever asserted to survive the round
-trip.** A canary written under `workspace/` before the wipe and read back after the restore
-closes the gap — and is the only check that would catch a regression in the path this
-agent's data actually takes.
+and `scripts/install.sh:102` mentions the script only in a comment about the AWS CLI. No
+installer writes the crontab.
 
-### 3.3 `hermes-data` is skipped entirely when the container is down
+Until someone runs that block, the aquarium data has **one copy on one EBS volume**. This
+is the last remaining item in this section and the highest-consequence one in this file.
 
-An asymmetry worth knowing *before* an incident, not during one. `hermes-data` is captured
-through the running container:
+### 3.2 CI now proves a file round-trips — CLOSED
+
+The backup/restore smoke test used to assert only that `hermes-data.tar.gz` was non-empty,
+so nothing proved a file inside it survived. It now writes a canary into the live-data path
+and checks it comes back:
 
 ```sh
-dc exec -T hermes tar czf - -C /opt/data . > "${RUN_DIR}/hermes-data.tar.gz"   # backup.sh:106
+dc exec -T hermes sh -c 'mkdir -p /opt/data/workspace && echo CI-FILE-CANARY > /opt/data/workspace/ci-canary.txt'
 ```
 
-whereas `synapse-media` and `caddy-data` are read from the volume directly
-(`backup.sh:127-128`) and are captured either way. **A backup taken while `hermes` is down
-silently omits the aquarium data.** `backup.sh` does refuse to exit 0 on an incomplete
-backup unless `--allow-partial` is passed, so this surfaces — but only if someone reads the
-exit code.
+`.github/workflows/docker-smoke-test.yml:1384`, asserted at `:1424`. That is exactly the
+path this skill's CLI writes to.
 
-### 3.4 Two scripts destroy it, and one of them is not obvious
+### 3.3 `hermes-data` is no longer captured through the container — CLOSED
+
+It used to be tarred via `dc exec`, making it the one store that vanished from a backup
+taken while its service was down. It is now read from the volume like everything else —
+`scripts/backup.sh:167`, with the reasoning recorded in the comment above it.
+
+### 3.4 Two scripts still destroy it, and one is not obvious — UNCHANGED
 
 - `wipe.sh --yes` removes every volume carrying the compose project label
   (`scripts/wipe.sh:75`), `hermes-data` among them. Unsurprising.
@@ -127,30 +115,81 @@ exit code.
 
 ---
 
-## 4. Documentation in `tairy-agent` that is already wrong
+## 4. One stale cell left in `docs/storage.md`
 
-The volume table at `docs/storage.md:17-25` has three stale cells. `backup.sh` has since
-been fixed; the table was not updated:
+The volume table has been rewritten and is now correct about coverage — every store reads
+✅, including the Hindsight database, `synapse-media` and `caddy-data` that this note
+previously flagged.
 
-| Row | Table says | `backup.sh` actually does |
-|---|---|---|
-| `postgres-data` | ⚠️ `synapse` only | `for db in synapse hindsight` — both (`:80`) |
-| `synapse-media` | ❌ | `archive_volume ...` — captured (`:127`) |
-| `caddy-data` | ❌ | `archive_volume ...` — captured (`:128`) |
+One cell has gone stale in the opposite direction. `docs/storage.md:20` still qualifies
+`hermes-data` with:
 
-`caddy-logs` and `caddy-config` are correctly marked ❌.
+> ✅ whole-volume tar, **but only while the container is running**
 
-Anyone reasoning about backup coverage from that table reaches the wrong conclusion in both
-directions — believing memory is lost when it is safe, and not asking about the one store
-that really is conditional (§3.3).
-
-> An earlier version of this note cited `docs/storage.md:85-93` for this. That is now the
-> log-retention section and has nothing to do with backup coverage. It is the clearest
-> argument for `check-integration-note.sh`.
+That was true and is no longer: `scripts/backup.sh:167` reads it from the volume, and the
+comment directly above says so in as many words. The caveat now warns about a risk that has
+been engineered away, which will cost someone an unnecessary decision during an incident.
 
 ---
 
-## 5. What this repo does not own
+## 5. The profile is not skills-only, and wiping the directory does not make it so
+
+`create-profile.sh:74` wipes `${home}/skills` and copies the profile's skills in. That is
+undone almost immediately, and the chain is worth reading in full because each link looks
+harmless:
+
+| | |
+|---|---|
+| `docker-compose.yml:222` | the container's command is `["gateway", "run"]` |
+| `hermes-agent/hermes_cli/main.py:3511` | `cmd_gateway` calls `_sync_bundled_skills_quietly()` |
+| `hermes-agent/tools/skills_sync.py:711` | `sync_skills()` copies **all 58 bundled skills** into `$HERMES_HOME/skills/` |
+| `scripts/bootstrap.sh:672` | **restarts hermes right after `create-profile.sh`**, so the sync runs again |
+
+So the agent is carrying Apple Notes, p5.js, four coding-agent delegators, GitHub, email and
+X posting. Most are inert for want of credentials, and the cost is mainly ~1,175 tokens of
+skill index on every API call — but `autonomous-ai-agents/hermes-agent` can "configure,
+theme, extend, and orchestrate Hermes Agent", and it **cannot be disabled**
+(`hermes-agent/agent/skill_utils.py:443`).
+
+**Check it before deciding it does not matter:**
+
+```sh
+docker compose exec hermes ls ~/.hermes/skills/
+```
+
+One directory means the profile is clean. Twelve means the sync has run.
+
+### The fix
+
+One marker file, which is the only mechanism that survives a gateway restart
+(`hermes-agent/tools/skills_sync.py:728,746-751`):
+
+```sh
+docker compose exec hermes touch /opt/data/.no-bundled-skills
+```
+
+Better, in `create-profile.sh` beside the `rm -rf`, so it is reapplied on every provision.
+With it, `sync_skills()` seeds only `ESSENTIAL_SKILLS` — `hermes-agent` and nothing else —
+leaving this repo's three skills plus that one.
+
+`skills.disabled` in `config.yaml` is the weaker alternative: it hides skills from the index
+but leaves the files, and the list must be re-audited on every hermes-agent upgrade.
+
+## 6. The harness tests a narrower agent than you deploy
+
+Recorded because it changes how much an eval proves, not because this repo can fix it.
+
+| | Toolsets |
+|---|---|
+| Deployed (Matrix) | `hermes-matrix` → `_HERMES_CORE_TOOLS`: `web_search`, `web_extract`, `terminal`, `process`, and the full `browser_*` set (`hermes-agent/toolsets.py:32`, `:552`) |
+| This repo's harness | `["skills", "file", "terminal"]` (`harness/agent.py:56`) |
+
+**No eval exercises the web or browser tools the real agent has.** Every behavioural result
+in this repo describes an agent that cannot reach the internet; the deployed one can. The
+access boundary in [`specs/04`](specs/04-access-boundary.md) constrains what the agent
+should reach on the LAN, and says nothing about this.
+
+## 7. What this repo does not own
 
 Matrix accounts, display names, avatars on the homeserver, secrets, Hindsight memory,
 ingress, the container image, and the deployment's own CI. Unchanged by anything here.

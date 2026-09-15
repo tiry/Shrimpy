@@ -7,11 +7,23 @@
 # skills/*.
 #
 # vendor/ is the pinned hermes-agent submodule and is not ours to lint.
+#
+# The two vendored skills under skills/research and skills/media are upstream code
+# too, copied verbatim so `create-profile.sh` deploys them. They are excluded for a
+# stronger reason than taste: `tests/test_vendored_skills.py` asserts they byte-match
+# the submodule, so any lint fix applied here would fail that check. Reformat them
+# upstream or not at all. The aquarium skill IS ours and stays linted.
 
 line-length = 120
 target-version = "py311"   # upstream's floor; the deployment container runs 3.13
 
-extend-exclude = ["vendor", ".venv", ".work"]
+extend-exclude = [
+    "vendor",
+    ".venv",
+    ".work",
+    "skills/research",   # vendored from hermes-agent, byte-matched by a test
+    "skills/media",     # vendored from hermes-agent, byte-matched by a test
+]
 
 [lint]
 select = [

@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
 
 from . import REPO_ROOT
 from . import home as home_mod
@@ -69,11 +70,25 @@ def cmd_ask(args) -> int:
         print("nothing to ask", file=sys.stderr)
         return 2
 
+    data = None
+    if getattr(args, "data", None):
+        if args.data == "live":
+            data = (
+                agent_mod.REPO_ROOT / "skills" / "aquarium" / "aquarium-supervisor"
+                / "assets" / "initial"
+            )
+        else:
+            data = Path(args.data)
+        if not data.is_dir():
+            print(f"no such data directory: {data}", file=sys.stderr)
+            return 2
+
     result = agent_mod.run(
         question,
         model=args.model,
         ephemeral=not args.keep,
         max_iterations=args.max_iterations,
+        aqua_data=data,
     )
 
     if args.json:
@@ -178,6 +193,12 @@ def main(argv=None) -> int:
     p.add_argument("--json", action="store_true", help="full structured result")
     p.add_argument("--keep", action="store_true", help="use .work/home instead of a temp dir")
     p.add_argument("--max-iterations", type=int, default=20)
+    p.add_argument(
+        "--data",
+        metavar="DIR",
+        help="aquarium data to answer against (default: the frozen eval fixtures). "
+        "Use 'live' for the skill's current bundled payload.",
+    )
     p.set_defaults(func=cmd_ask)
 
     p = add("chat", "interactive REPL as Shrimpy")

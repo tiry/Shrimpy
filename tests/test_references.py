@@ -22,6 +22,17 @@ REFERENCE_RE = re.compile(r"`?references/([A-Za-z0-9._/-]+\.md)`?")
 
 SUPPORT_DIRS = ("references", "templates", "assets", "scripts")
 
+# Skills this repo authors. The vendored ones (spec 11) are copied verbatim from
+# hermes-agent and `tests/test_vendored_skills.py` asserts they byte-match it, so
+# a house-style rule cannot be applied to them — the fix would be an edit, and the
+# edit would fail the drift guard. Rules that prove the *copy* is intact still
+# apply to everything.
+AUTHORED = ("aquarium",)
+
+
+def _is_authored(skill_md) -> bool:
+    return skill_md.parent.parent.name in AUTHORED
+
 
 def _cited(skill_md) -> set[str]:
     return set(REFERENCE_RE.findall(body(skill_md)))
@@ -35,6 +46,8 @@ def _present(skill_md) -> set[str]:
 
 
 def test_cited_references_exist(skill_md):
+    """Applies to vendored skills too: a cited file that is absent means the copy
+    is incomplete, which is a vendoring bug rather than a style disagreement."""
     missing = sorted(_cited(skill_md) - _present(skill_md))
     assert not missing, (
         f"{skill_md.parent.name} cites reference files that do not exist: {missing}. "
@@ -47,7 +60,14 @@ def test_no_orphan_references(skill_md):
 
     References are not in the skill index, so the ONLY way the model learns a
     file exists is a mention in SKILL.md (or in another reference).
+
+    Authored skills only. Both vendored skills orphan a reference upstream
+    (`grounding-rationale.md`, `output-formats.md`), which is a real if minor
+    upstream defect — and not one this repo can fix without forking a copy it
+    has committed to keeping byte-identical.
     """
+    if not _is_authored(skill_md):
+        pytest.skip("vendored skill — house conventions are not enforced on a verbatim copy")
     present = _present(skill_md)
     if not present:
         pytest.skip("no references/")

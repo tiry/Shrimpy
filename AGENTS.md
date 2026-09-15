@@ -125,6 +125,19 @@ assertion is read with `expect.get(...)`, so a misspelled key was silently ignor
 case passed having asserted nothing. `evals/cases/schema.json` is generated from the same
 definitions for editor autocomplete; a test fails if they drift.
 
+**Wiping `$HERMES_HOME/skills/` does not give you a skills-only profile.** `hermes gateway`
+calls `_sync_bundled_skills_quietly()` on every start, which re-seeds all 58 bundled skills —
+and `tairy-agent/scripts/bootstrap.sh` restarts hermes immediately after `create-profile.sh`
+wipes the directory. Only the `.no-bundled-skills` marker survives a restart. See
+[`specs/11`](specs/11-vendored-skills.md) and [`INTEGRATION.md`](INTEGRATION.md).
+
+**A vendored skill can advertise a capability the container cannot deliver.** `productivity/pdf`
+was rejected because `pymupdf` and `pdfplumber` are in neither hermes's `[all]` extra nor
+`tools/lazy_deps.py`, and the skill declares no `required_commands` — so `skill_view` would
+report it available and every script would die on import. `tests/test_vendored_skills.py`
+checks imports against what the image can actually satisfy, and byte-matches each copy against
+the pinned submodule so it cannot drift into an unmaintained fork.
+
 **Hook and middleware dispatch is fail-open.** An exception in a `pre_tool_call` hook is
 swallowed into a debug log. Anything registered there must record, never raise.
 
@@ -159,5 +172,7 @@ anything, and the backup/restore round trip in CI asserts a Postgres row rather 
 
 That detail is deliberately *not* repeated here. It cites line numbers in another repo,
 three of which had already drifted when the note was written — one into an entirely
-unrelated section. `scripts/check-integration-note.sh` re-verifies all eleven citations
-when `../tairy-agent` is present and skips cleanly when it is not.
+unrelated section. `scripts/check-integration-note.sh` re-verifies all twenty citations
+when `../tairy-agent` is present and skips cleanly when it is not — and it earned its keep:
+`tairy-agent` moved from `e53c3bf` to `9306cf0` and closed three of the note's four warnings,
+which would otherwise have left the note confidently wrong.

@@ -969,3 +969,39 @@ def test_evals_read_the_fixtures_not_the_payload():
     )
     assert payload != AQUA_FIXTURES
     assert payload not in AQUA_FIXTURES.parents
+
+
+def test_a_category_qualified_skill_name_is_recorded_canonically():
+    """Adding a second skill category broke every `opens_skills` assertion.
+
+    With one category the model called `skill_view(name="aquarium-supervisor")`.
+    With three it began disambiguating — `name="aquarium:aquarium-supervisor"` —
+    which Hermes resolves correctly and which the harness recorded verbatim, so
+    twelve cases failed on runs where the agent had done exactly the right thing.
+
+    The envelope carries the canonical name. Parse that, never the request: the
+    same lesson as `skills_opened` once scanning tool bodies for "not found".
+    """
+    import json
+
+    from harness.agent import _skills_opened
+
+    functions = [
+        {"name": "skill_view", "_id": "a",
+         "arguments": json.dumps({"name": "aquarium:aquarium-supervisor"})},
+    ]
+    results = {"a": json.dumps({"success": True, "name": "aquarium-supervisor"})}
+    assert _skills_opened(functions, results) == ["aquarium-supervisor"]
+
+
+def test_a_failed_qualified_lookup_is_still_excluded():
+    """The original guard must survive the fix: a miss is not a load."""
+    import json
+
+    from harness.agent import _skills_opened
+
+    functions = [
+        {"name": "skill_view", "_id": "a", "arguments": json.dumps({"name": "aquarium"})},
+    ]
+    results = {"a": json.dumps({"success": False, "error": "Skill 'aquarium' not found."})}
+    assert _skills_opened(functions, results) == []

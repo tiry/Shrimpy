@@ -285,12 +285,26 @@ def _skills_opened(functions: list[dict], results: dict[str, str]) -> list[str]:
             args = json.loads(fn.get("arguments") or "{}")
         except (ValueError, TypeError):
             continue
-        name = args.get("name") or args.get("skill")
-        if not name or name in names:
+        requested = args.get("name") or args.get("skill")
+        if not requested:
             continue
-        if _tool_failed(results.get(fn.get("_id") or "", "")):
+        raw = results.get(fn.get("_id") or "", "")
+        if _tool_failed(raw):
             continue
-        names.append(name)
+        # Record what Hermes RESOLVED, not what the model asked for. Once the
+        # profile held more than one category the model began qualifying the name
+        # — `skill_view(name="aquarium:aquarium-supervisor")` — which resolves
+        # fine and made every `opens_skills` assertion fail on a correct run.
+        # The envelope carries the canonical name; parse that, never the request.
+        name = requested
+        try:
+            payload = json.loads(raw)
+            if isinstance(payload, dict) and payload.get("name"):
+                name = payload["name"]
+        except (ValueError, TypeError):
+            pass
+        if name not in names:
+            names.append(name)
     return names
 
 
@@ -363,6 +377,7 @@ def run(
     use_snapshot: bool = False,
     force_live: bool = False,
     case_id: str = "",
+    aqua_data: Path | None = None,
 ) -> RunResult:
     """Ask Shrimpy one question. Returns a RunResult; does not raise on model failure.
 
@@ -380,16 +395,22 @@ def run(
     provider = home_mod.resolve_provider(provider)
     effective_toolsets = list(toolsets or RUN_TOOLSETS)
 
-    # A per-run copy of the eval fixtures, so parallel cases cannot see each
-    # other's writes. AQUA_DATA_DIR is process-global; the interceptor is not,
-    # so the data dir is injected per tool call instead of exported.
+    # A per-run copy of the data, so parallel cases cannot see each other's
+    # writes. AQUA_DATA_DIR is process-global; the interceptor is not, so the data
+    # dir is injected per tool call instead of exported.
+    #
+    # Evals always use the frozen fixtures, which is what keeps their assertions
+    # still. `aqua_data` exists for `ask`: answering a real question about the real
+    # tanks against test data produces a confident answer about the wrong roster.
+    # The copy is still a copy — a question never writes to the source.
     aqua_dir: Path | None = None
     aqua_tmp: Path | None = None
     if intercept:
+        source = aqua_data or AQUA_FIXTURES
         aqua_tmp = Path(tempfile.mkdtemp(prefix="shrimpy-aqua-"))
         aqua_dir = aqua_tmp / "aquarium"
-        if AQUA_FIXTURES.is_dir():
-            shutil.copytree(AQUA_FIXTURES, aqua_dir)
+        if source.is_dir():
+            shutil.copytree(source, aqua_dir)
         else:
             aqua_dir.mkdir(parents=True)
 

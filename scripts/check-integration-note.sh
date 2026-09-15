@@ -71,24 +71,42 @@ claim "hermes-agent/docker/stage2-hook.sh"              250      'workspace' \
 claim "scripts/create-profile.sh"                       74       'rm -rf' \
       "CRITICAL: if this rm -rf is no longer scoped to skills/, live data dies on provision"
 
-# 3.1 - the cron nobody installs
-claim "docs/ec2-deploy.md"                              295-310  'crontab'
-claim "scripts/install.sh"                              160      'backup' \
-      "install.sh may now actually install the cron -- good news, update the note"
+# 3.1 - the cron nobody schedules
+claim "docs/ec2-deploy.md"                              490      'crontab -l'
+claim "scripts/install.sh"                              102      'backup-nightly' \
+      "install.sh may now actually schedule the cron -- good news, update the note"
 
-# 3.2 / 3.3 - what backup.sh captures and how
-claim "scripts/backup.sh"                               106      'tar czf - -C /opt/data' \
-      "hermes-data may no longer be captured through the container"
-claim "scripts/backup.sh"                               127-128  'archive_volume.*synapse-media' \
-      "synapse-media may no longer be read from the volume directly"
-claim "scripts/backup.sh"                               80       'for db in synapse hindsight'
+# 3.2 / 3.3 - what CI proves and how backup.sh captures hermes-data
+claim ".github/workflows/docker-smoke-test.yml"         1384     'ci-canary.txt' \
+      "the workspace file canary may have been removed; 3.2 would reopen"
+claim ".github/workflows/docker-smoke-test.yml"         1424     'grep -c .workspace/ci-canary'
+claim "scripts/backup.sh"                               167      'archive_volume.*hermes-data' \
+      "hermes-data may be captured through the container again; 3.3 would reopen"
+claim "scripts/backup.sh"                               81       'for db in synapse hindsight'
 
 # 3.4 - what destroys it
 claim "scripts/wipe.sh"                                 75       'docker volume ls'
 
-# 4 - the stale table
-claim "docs/storage.md"                                 17-25    'Backed up?' \
-      "the volume table moved; re-locate the stale cells before citing them"
+# 4 - the one stale cell
+claim "docs/storage.md"                                 20       'only while the container is running' \
+      "the stale caveat may have been fixed -- if so, delete section 4"
+
+# 5 - the bundled-skill re-seed chain
+claim "docker-compose.yml"                              222      'command:' \
+      "the container may no longer start via the gateway; re-check whether the skill sync runs"
+claim "hermes-agent/hermes_cli/main.py"                 3512     '^    _sync_bundled_skills_quietly()' \
+      "cmd_gateway may no longer re-seed bundled skills - good news, update the note"
+claim "hermes-agent/tools/skills_sync.py"               711      'def sync_skills'
+claim "hermes-agent/tools/skills_sync.py"               728      'essential_only = ' \
+      "CRITICAL: the opt-out marker is what the fix in section 5 depends on"
+claim "hermes-agent/agent/skill_utils.py"               443      'ESSENTIAL_SKILLS: frozenset'
+claim "scripts/bootstrap.sh"                            672      'dc restart hermes' \
+      "if bootstrap no longer restarts hermes after create-profile, the re-seed may not happen"
+
+# 6 - the toolset divergence
+claim "hermes-agent/toolsets.py"                        33       '"web_search", "web_extract"' \
+      "_HERMES_CORE_TOOLS may no longer grant web access to the Matrix bundle"
+claim "hermes-agent/toolsets.py"                        552      '"hermes-matrix"'
 
 echo
 printf 'verified %d, moved %d, failed %d\n' "$pass" "$moved" "$fail"
