@@ -1,0 +1,9 @@
+tank,id,name,species,count,added,confidence,notes
+display,display-neocaridina-red,Neocaridina shrimp (red),neocaridina,8,,confirmed,"The four colour groups share one tank and interbreed freely, so the lines will trend toward wild brown over successive generations. Separating a line needs a second tank, not a divider."
+display,display-neocaridina-yellow,Neocaridina shrimp (yellow),neocaridina,3,,confirmed,Interbreeds with the other colour groups in this tank.
+display,display-neocaridina-red-white,Neocaridina shrimp (red and white),neocaridina,3,,confirmed,Interbreeds with the other colour groups in this tank.
+display,display-neocaridina-orange-white,Neocaridina shrimp (orange and white),neocaridina,3,,confirmed,Interbreeds with the other colour groups in this tank.
+display,display-guppy,Fancy guppy,guppy,9,,confirmed,"Sex ratio unknown. If mixed, fry within weeks and a compounding bioload. Guppies take shrimplets, so recruitment in a shared tank depends on cover."
+display,display-mystery-snail,Albino mystery snail,mystery_snail,4,,confirmed,"Adults are commonly given 2.5-5 gal each, so this group is the largest single bioload in the tank. Shell condition is the health signal to watch."
+display,display-nerite,Red Racer nerite,nerite,1,,confirmed,"Grazes biofilm only and cannot breed in fresh water, so this group only ever shrinks. Losses are not replaced from within."
+display,display-sucker,Otocinclus,otocinclus,1,,confirmed,"Species confirmed. Alone, and Otocinclus are shoaling animals - see the shoal minimum in `aqua species otocinclus`. The belly check is the health signal: rounded means feeding, flat or sunken is the warning."
