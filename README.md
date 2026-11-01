@@ -7,10 +7,11 @@ archived run.
 
 Written by `scripts/publish-transcripts.sh`. Do not edit by hand.
 
-**4 runs kept** · 3 fully green · $2.15 spent in total
+**5 runs kept** · 4 fully green · $2.90 spent in total
 
 | Run | Date | Model | Result | Cost | Commit | Read |
 |---|---|---|---|--:|---|---|
+| 27 | 2026-11-01 | `google/gemini-3.8-flash` | 25/25 | $0.7478 | `fa27ec3` | [open](runs/2026-11-01__run-27__google-gemini-3.8-flash/index.md) |
 | 26 | 2026-10-01 | `google/gemini-3.8-flash` | 25/25 | $0.7307 | `fa27ec3` | [open](runs/2026-10-01__run-26__google-gemini-3.8-flash/index.md) |
 | 17 | 2026-09-09 | `google/gemini-3.8-flash` | 20/20 | $0.5546 | `e2dec35` | [open](runs/2026-09-09__run-17__google-gemini-3.8-flash/index.md) |
 | 14 | 2026-09-09 | `google/gemini-3.8-flash` | **15/16** | $0.4350 | `067fdb6` | [open](runs/2026-09-09__run-14__google-gemini-3.8-flash/index.md) |
